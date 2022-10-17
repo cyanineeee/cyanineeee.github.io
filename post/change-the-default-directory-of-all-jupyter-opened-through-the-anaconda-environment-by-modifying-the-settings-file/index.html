@@ -1,0 +1,189 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Change the default directory of all jupyter opened through the anaconda environment by modifying the settings file | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1666017238628">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Change the default directory of all jupyter opened through the anaconda environment by modifying the settings file | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="因为要参加一个人工智能比赛，需要学习pytorch，所以久违的打开了jupyter，
+然而让人很不爽的是，不但不能插入图片，而且默认缩进变成了两个空格；
+后面更改为anaconda的root环境发现默认打开目录还是c盘。
+因为前两个问题没有..." />
+    <meta name="keywords" content="tool,python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1666017238628" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Change the default directory of all jupyter opened through the anaconda environment by modifying the settings file
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-17
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+                <a href="https://cyanineeee.github.io/tag/-uPahkw58/" class="post-tag">
+                  # tool
+                </a>
+              
+                <a href="https://cyanineeee.github.io/tag/axGgidGI4/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>因为要参加一个人工智能比赛，需要学习pytorch，所以久违的打开了jupyter，<br>
+然而让人很不爽的是，不但不能插入图片，而且默认缩进变成了两个空格；<br>
+后面更改为anaconda的root环境发现默认打开目录还是c盘。</p>
+<p>因为前两个问题没有适用的解决方案（包括官方的通过js控制台修改），所以于是尝试修改第三个问题——更改root环境下的jupyter默认目录，解决方法是通过修改jupyter的设置文件<em>jupyter_notebook_config.py</em>中的<em>notebook_dir</em>。<br>
+结果发现，修完了这个问题之后，其他环境的前两个问题都解决了！！<br>
+方法：</p>
+<blockquote>
+<ol>
+<li>通过anaconda打开root环境下的terminal，然后输入<code>jupyter notebook --generate-config</code></li>
+<li>根据生成的目录找到文件，修改其中的<code>notebook_dir</code>后面的默认目录然后保存<br>
+Ps. 大部分IDE支持ctrl+f进行全局搜索</li>
+</ol>
+</blockquote>
+<p>但是很不幸的是，之前在pytorch环境下写的文件内容全部消失了😭😭😭</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/install-centos-in-virtualbox-and-configure-the-network-part2/">
+              <h3 class="post-title">
+                Install centos in virtualbox and configure the network Part.2
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

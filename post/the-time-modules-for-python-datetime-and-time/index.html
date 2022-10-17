@@ -1,0 +1,318 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The time modules for python: datetime and time. | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1666017238628">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="The time modules for python: datetime and time. | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="datetime
+
+datetime包含常用的几个对象：
+
+datetime.date  处理年月日
+datetime.time   处理时分秒
+datetime.datetime   处理年月日+时分秒
+
+
+datetime中的date对..." />
+    <meta name="keywords" content="python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1666017238628" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              The time modules for python: datetime and time.
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-04
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://cyanineeee.github.io/tag/axGgidGI4/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="datetime">datetime</h1>
+<blockquote>
+<p>datetime包含常用的几个对象：</p>
+<blockquote>
+<p>datetime.date  处理年月日<br>
+datetime.time   处理时分秒<br>
+datetime.datetime   处理年月日+时分秒</p>
+</blockquote>
+</blockquote>
+<h3 id="datetime中的date对象">datetime中的date对象</h3>
+<pre><code>from datetime import date
+now = date.today()  
+//datetime.date(2022, 10, 3)
+
+someday = date(2015,10,9) 
+//datetime.date(2015, 10, 9)
+
+between = now - someday 
+//datetime.timedelta(days=2552)
+
+print(date.max,'----&gt;',date.min) 
+//9999-12-31 ----&gt; 0001-01-01
+</code></pre>
+<p>today()按格式返回当前日期，可以通过date()创建日期，日期可以加减，date日期有最大最小值，超过会产生错误。如果进行print输出的话，相当于调用isoformat()函数输出。</p>
+<pre><code>from datetime import date
+date.today().isoformat() //'2022-10-04'
+</code></pre>
+<p>date中的iosformat()函数返回一个以ISO 8601格式 <code>YYYY-MM-DD</code>来表示日期字符串。<br>
+Ps.</p>
+<ol>
+<li>date类的<code>__str__</code>等价于isoformat()。</li>
+<li>date对象的其他应用('//'表示结果，‘#’表示注释)</li>
+</ol>
+<pre><code>from datetime import date
+d = date.fromordinal(730920) # 730920th day after 1. 1. 0001
+d
+//datetime.date(2002, 3, 11)
+
+#Methods related to formatting string output
+ d.isoformat()
+//'2002-03-11'
+ d.strftime(&quot;%d/%m/%y&quot;)
+//'11/03/02'
+d.strftime(&quot;%A %d. %B %Y&quot;)
+//'Monday 11. March 2002'
+d.ctime()
+//'Mon Mar 11 00:00:00 2002'4
+ 'The {1} is {0:%d}, the {2} is {0:%B}.'.format(d, &quot;day&quot;, &quot;month&quot;)
+//'The day is 11, the month is March.'
+
+#Methods for to extracting 'components' under different calendars
+t = d.timetuple()
+for i in t:     
+	print(i)
+2002                # year
+3                   # month
+11                  # day
+0
+0
+0
+0                   # weekday (0 = Monday)
+70                  # 70th day in the year
+-1
+ic = d.isocalendar()
+for i in ic:    
+	print(i)
+2002                # ISO year
+11                  # ISO week number
+1                   # ISO day number ( 1 = Monday )
+A date object is immutable; all operations produce a new object
+d.replace(year=2005)
+datetime.date(2005, 3, 11)
+</code></pre>
+<p>摘选自<a href="https://docs.python.org/zh-cn/3/library/datetime.html#module-datetime">python文档</a></p>
+<h3 id="datetime中的time对象">datetime中的time对象</h3>
+<pre><code>from datetime import time
+time(hour=12, minute=34, second=56, microsecond=123456).isoformat()
+//'12:34:56.123456'
+a = time(hour=12, minute=34, second=56, microsecond=123456)
+print(a)
+//12:34:56.123456
+</code></pre>
+<p>###datetime中的datetime对象</p>
+<pre><code>from datetime import datetime
+now = datetime.now()
+//datetime.datetime(2022, 10, 4, 19, 22, 36, 906117)
+print(now)
+//2022-10-04 19:22:36.906117
+
+datetime(2019, 5, 18, 15, 17, 8, 132263).isoformat()
+//'2019-05-18T15:17:08.132263'
+
+d = datetime(2019, 5, 18, 15, 17, 8, 132263).ctime()
+d
+//'Sat May 18 15:17:08 2019'
+</code></pre>
+<h3 id="一个重要的函数-strfmat">一个重要的函数 strfmat()</h3>
+<p>strfmat包含在datetime模块下的这三个对象中<br>
+可以将datetime对象以给定形式输出</p>
+<pre><code>from datetime import strfmat
+import datetime
+print(strftime(&quot;%Y-%m-%d,%H-%M-%S&quot;,time.localtime()))
+//2022-10-04,19-33-51
+
+print(strftime('%B-%b-%A-%a-%I-%p',time.localtime()))
+//October-Oct-Tuesday-Tue-07-PM
+
+fmt='%Y=%m=%b=%d=%A'
+print(strftime(fmt,time.localtime()))
+//2022=10=Oct=04=Tuesday
+</code></pre>
+<p>具体参数参考<a href="https://docs.python.org/zh-cn/3/library/datetime.html#strftime-strptime-behavior">python datetime模块</a>中的 &quot;strftime() 和 strptime() 的行为&quot;部分</p>
+<h4 id="一些补充">一些补充</h4>
+<pre><code>#当前时区的时间
+print(time.localtime())
+now = time.time()
+print(time.localtime(now))
+print(&quot;=&quot;*15)
+#UTC时区下的时间
+print(time.gmtime())
+
+#输出结果
+/*time.struct_time(tm_year=2022, tm_mon=10, tm_mday=4, tm_hour=19, tm_min=39, tm_sec=8, tm_wday=1, tm_yday=277, tm_isdst=0)
+time.struct_time(tm_year=2022, tm_mon=10, tm_mday=4, tm_hour=19, tm_min=39, tm_sec=8, tm_wday=1, tm_yday=277, tm_isdst=0)
+===============
+time.struct_time(tm_year=2022, tm_mon=10, tm_mday=4, tm_hour=11, tm_min=39, tm_sec=8, tm_wday=1, tm_yday=277, tm_isdst=0)*/
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#datetime">datetime</a><br>
+*
+<ul>
+<li><a href="#datetime%E4%B8%AD%E7%9A%84date%E5%AF%B9%E8%B1%A1">datetime中的date对象</a></li>
+<li><a href="#datetime%E4%B8%AD%E7%9A%84time%E5%AF%B9%E8%B1%A1">datetime中的time对象</a></li>
+<li><a href="#%E4%B8%80%E4%B8%AA%E9%87%8D%E8%A6%81%E7%9A%84%E5%87%BD%E6%95%B0-strfmat">一个重要的函数 strfmat()</a>
+<ul>
+<li><a href="#%E4%B8%80%E4%BA%9B%E8%A1%A5%E5%85%85">一些补充</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/djangos-logic-for-finding-templates-folders/">
+              <h3 class="post-title">
+                Django&#39;s logic for finding templates folders
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

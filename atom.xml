@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://cyanineeee.github.io</id>
+    <title>cyanine</title>
+    <updated>2022-10-17T14:34:02.076Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://cyanineeee.github.io"/>
+    <link rel="self" href="https://cyanineeee.github.io/atom.xml"/>
+    <subtitle>my personal blog</subtitle>
+    <logo>https://cyanineeee.github.io/images/avatar.png</logo>
+    <icon>https://cyanineeee.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2022, cyanine</rights>
+    <entry>
+        <title type="html"><![CDATA[Change the default directory of all jupyter opened through the anaconda environment by modifying the settings file]]></title>
+        <id>https://cyanineeee.github.io/post/change-the-default-directory-of-all-jupyter-opened-through-the-anaconda-environment-by-modifying-the-settings-file/</id>
+        <link href="https://cyanineeee.github.io/post/change-the-default-directory-of-all-jupyter-opened-through-the-anaconda-environment-by-modifying-the-settings-file/">
+        </link>
+        <updated>2022-10-17T14:18:10.000Z</updated>
+        <content type="html"><![CDATA[<p>因为要参加一个人工智能比赛，需要学习pytorch，所以久违的打开了jupyter，<br>
+然而让人很不爽的是，不但不能插入图片，而且默认缩进变成了两个空格；<br>
+后面更改为anaconda的root环境发现默认打开目录还是c盘。</p>
+<p>因为前两个问题没有适用的解决方案（包括官方的通过js控制台修改），所以于是尝试修改第三个问题——更改root环境下的jupyter默认目录，解决方法是通过修改jupyter的设置文件<em>jupyter_notebook_config.py</em>中的<em>notebook_dir</em>。<br>
+结果发现，修完了这个问题之后，其他环境的前两个问题都解决了！！<br>
+方法：</p>
+<blockquote>
+<ol>
+<li>通过anaconda打开root环境下的terminal，然后输入<code>jupyter notebook --generate-config</code></li>
+<li>根据生成的目录找到文件，修改其中的<code>notebook_dir</code>后面的默认目录然后保存<br>
+Ps. 大部分IDE支持ctrl+f进行全局搜索</li>
+</ol>
+</blockquote>
+<p>但是很不幸的是，之前在pytorch环境下写的文件内容全部消失了😭😭😭</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Install centos in virtualbox and configure the network Part.2]]></title>
+        <id>https://cyanineeee.github.io/post/install-centos-in-virtualbox-and-configure-the-network-part2/</id>
+        <link href="https://cyanineeee.github.io/post/install-centos-in-virtualbox-and-configure-the-network-part2/">
+        </link>
+        <updated>2022-10-09T07:04:26.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="在virtualbox安装centos并且调配好网络-part2">在virtualbox安装centos并且调配好网络 Part.2</h3>
+<p>第一部分完成了安装virtualbox和centos，接下来就是要配置网络。</p>
+<p>目标：在virtualbox上安装运行centos，并且虚拟机可以连接互联网，主机和虚拟机之间也可以互相连接。最后连接虚拟机SSH。</p>
+<p>Step1. 下载MobaXterm<br>
+<a href="https://mobaxterm.mobatek.net/download-home-edition.html">连接</a>，选择【installer edition】。<br>
+下载好之后，选择安装地址，然后一路默认。</p>
+<p>Step2. 配置虚拟机网络<br>
+这里涉及到几种连接方式，但本文只着重于操作方法，具体概念会在以后再写一篇，同时这篇文章最后也会提供这些概念的一些参考链接。<br>
+这里采用NAT+ host-only的方法。前者负责虚拟机连接互联网，后者负责虚拟机和主机通信。<br>
+2.1 NAT配置<br>
+首先退出虚拟机，然后在virtualbox界面选择【管理】-【全局设置】-【网络】-右侧的第一个图标，然后设置如下：</p>
+<blockquote>
+<figure data-type="image" tabindex="1"><img src="https://s3.bmp.ovh/imgs/2022/10/09/847ced001e30d76c.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>然后选择左侧创建的虚拟机，然后点击【设置】-【网络】-【网卡1】，配置如下：</p>
+<blockquote>
+<figure data-type="image" tabindex="2"><img src="https://s3.bmp.ovh/imgs/2022/10/09/b57e935df0dd007e.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>这时再次打开虚拟机之后，尝试<br>
+<code>ping baicu.com</code>发现可以ping通，表明配置成功。<br>
+然后再次退出，进行下一步配置。</p>
+<p>2.2 host-only配置<br>
+在virtualbox界面选择【管理】-【主机网络管理器】然后设置如下：</p>
+<blockquote>
+<figure data-type="image" tabindex="3"><img src="https://s3.bmp.ovh/imgs/2022/10/09/1a0e3fc5dfcd00f9.png" alt="插入图片" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://s3.bmp.ovh/imgs/2022/10/09/b9eeba12143f8b14.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>配置完之后点击【应用】，然后选择左侧的虚拟机，点击【设置】-【网络】-【网卡2】，配置如下：</p>
+<blockquote>
+<figure data-type="image" tabindex="5"><img src="https://s3.bmp.ovh/imgs/2022/10/09/b6030bf6bc5392dc.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>然后再次启动，输入 ip addr</p>
+<blockquote>
+<figure data-type="image" tabindex="6"><img src="https://s3.bmp.ovh/imgs/2022/10/09/1c1680ce6f070d24.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>lo 是本地网络（127.0.0.1)，默认配置就可以<br>
+enp0s3是配置的NAT网卡，负责虚拟机和互联网联通，默认配置就可以，我们也不需要知道他的IP地址<br>
+enp0s8是我们现在配置的host-only网卡，蓝色线对应的就是虚拟机负责与主机连通的ip地址。<br>
+我们尝试用主机ping这个地址，在用虚拟机ping主机，两边连通正常。表示配置完成。</p>
+<p>Step3. 配置SSH连接<br>
+打开安装好的MobaXterm，点击左上角的session，选择SSH，在Remote host输入刚才蓝线表示的虚拟机IP地址（要保证虚拟机运行），然后点击【ok】<br>
+login as提示输入账户名，我们只使用了管理员root账户，所以输入root<br>
+password提示我们输入密码。<br>
+全部正确之后，出现如下页面表示连接正常。</p>
+<blockquote>
+<figure data-type="image" tabindex="7"><img src="https://s3.bmp.ovh/imgs/2022/10/09/44563696b66957e7.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>这时我们就相当于通过SSH于虚拟机远程连接，可以在MobaXterm上运行主机，包括安装删除文件、调整配置等。</p>
+<p>Ps.我没有设置静态ip，所以可能会在之后的连接中因为动态ip分配而导致连接错误，不过因为主机配置的局域网ip基本不会发生改变，所以配置的ip也不会经常改变，所以暂时不去设置静态ip。</p>
+<p>virtualbox几种连接方式详解：<a href="https://zhuanlan.zhihu.com/p/403513377">详解连接</a><br>
+MobaXterm安装参考：<a href="https://zhuanlan.zhihu.com/p/372416247">详解连接</a><br>
+配置NAT和host-only参考：<a href="https://zhuanlan.zhihu.com/p/381391993">详解连接</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Install centos in virtualbox and configure the network Part.1]]></title>
+        <id>https://cyanineeee.github.io/post/install-centos-in-virtualbox-and-configure-the-network-part1/</id>
+        <link href="https://cyanineeee.github.io/post/install-centos-in-virtualbox-and-configure-the-network-part1/">
+        </link>
+        <updated>2022-10-09T07:02:51.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="在virtualbox安装centos并且调配好网络-part1">在virtualbox安装centos并且调配好网络 Part.1</h3>
+<p>之前暑假就因为项目原因要配置一次virtualbox+centos7+MobaXterm作为开发环境，没想到一到学校连接校园网之前调配的就全都断掉了（心态崩了），而且由于之前做完没有写个博客之类的记录，这下相当于重头再来了。不过好在还是有一点经验，外加上之前也保存的了一些有用的网站。这次配置起来还是快了不少。</p>
+<p>目标：在virtualbox上安装运行centos，并且虚拟机可以连接互联网，主机和虚拟机之间也可以互相连接。最后连接虚拟机SSH。</p>
+<h4 id="step1-下载virtualbox和centos7">Step1. 下载virtualbox和centos7</h4>
+<p><a href="https://www.virtualbox.org/wiki/Downloads">virtualbox下载地址</a>，选择<strong>VirtualBox 6.1.38 platform packages</strong>的本windows版本以及<br>
+<strong>rtualBox 6.1.38 Oracle VM VirtualBox Extension Pack</strong>的<strong>All supported platforms</strong>下载<br>
+<a href="http://mirrors.cqu.edu.cn/CentOS/7.9.2009/isos/x86_64/">centos下载地址</a>  选择**CentOS-7-x86_64-DVD-2009.iso **下载（大概有4.5GB）</p>
+<h4 id="step2-安装virtualbox">Step2. 安装virtualbox</h4>
+<p>安装提示自选安装地址安装完成后，打开【管理】-【全局设定】-【拓展】安装刚才下载的Extension Pack。<br>
+centos下载好之后是一个文件，只要你能找得到地址就可以了。</p>
+<h4 id="step3-在virtualbox上安装centos7输入的内容可以完全照抄">Step3. 在virtualbox上安装centos7（输入的内容可以完全照抄）</h4>
+<h5 id="31-点击新建">3.1 点击【新建】</h5>
+<p>然后输入如下配置：</p>
+<blockquote>
+<figure data-type="image" tabindex="1"><img src="https://s3.bmp.ovh/imgs/2022/10/09/58a0484a0da67979.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>之后一路默认，最后点击创建。<a href="https://zhuanlan.zhihu.com/p/355459604">参考教程</a></p>
+<h5 id="32-安装配置">3.2 安装配置</h5>
+<p>选择左侧刚创建好的虚拟机，然后点击【启动】<br>
+之后的窗口会让你选择要安装的系统文件，然后找到下载好的centos系统文件，点击启动</p>
+<blockquote>
+<figure data-type="image" tabindex="2"><img src="https://s3.bmp.ovh/imgs/2022/10/09/b188c3bc49b9afb7.png" alt="" loading="lazy"></figure>
+<center>找到刚才下载的centos系统
+</blockquote>
+<p>然后选择【Install CentOS 7】（就是上下键把高亮调到第一个然后按回车）。<br>
+等待基本配置完成之后，第一个页面是选择语言，翻到最底下选择中文，然后点击【继续】。<br>
+然后是安装信息摘要页面，把每一个选项都点击进去，但是不要做任何配置（除了下面的网络和主机名），点击进去之后立马点完成。</p>
+<p>但是注意！！！！<strong>网络和主机名</strong>选项要选择【打开】，然后再点击完成。</p>
+<blockquote>
+<figure data-type="image" tabindex="3"><img src="https://s3.bmp.ovh/imgs/2022/10/09/a5b9866ff7617b0e.png" alt="网络配置一定要打开！" loading="lazy"></figure>
+<center>这一步对之后的网络配置很重要
+</blockquote>
+<p>完成后的配置如下：</p>
+<blockquote>
+<p><img src="https://s3.bmp.ovh/imgs/2022/10/09/8bd51596b06431db.png" alt="配置" loading="lazy"><br>
+<img src="https://s3.bmp.ovh/imgs/2022/10/09/bb0170f517e39969.png" alt="配置" loading="lazy"></p>
+</blockquote>
+<p>然后点击【开始安装】<br>
+之后设置root密码（Ps. 如果是用108键盘数字，记得<strong>打开Num Lock</strong>，virtualbox启动虚拟机会默认关闭），设置完之后就会开始安装，我们不需要创建新用户，所以忽略右侧的选项。</p>
+<p>安装完成之后点击重新启动。<br>
+localhost login提示我们输入用户名，这里输入<strong>root</strong>,就是刚才黄健的默认管理员用户。<br>
+Paasword提示输入密码，这里的密码输入不可见。<br>
+正确输入之后，就成功进入了~</p>
+<blockquote>
+<figure data-type="image" tabindex="4"><img src="https://s3.bmp.ovh/imgs/2022/10/09/998bf2ffff24e7f8.png" alt="如下" loading="lazy"></figure>
+<center>如果输入错误会提示login incorrect 
+<center>成功进入左侧的提示就会变成类似于最后一行
+</blockquote>
+<p>最后附上参考  <a href="https://zhuanlan.zhihu.com/p/355638540">参考教程</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[The solution of insert images into markdown ]]></title>
+        <id>https://cyanineeee.github.io/post/the-solution-of-insert-images-into-markdown/</id>
+        <link href="https://cyanineeee.github.io/post/the-solution-of-insert-images-into-markdown/">
+        </link>
+        <updated>2022-10-07T09:24:17.000Z</updated>
+        <content type="html"><![CDATA[<p>原先在知乎上找到的通过Picgo+Github仓库的方法貌似在我这用不了（也不知道为什么）<br>
+不过在博客插入图片的本质就是引入图片的url，所以只要能将图片上传到网络并且给他一个url连接就可以通过markdown插入图片的方法引入了。<br>
+目前采用的是<a href="https://www.imgurl.org/">imgURL</a>这个图床网站，免费每天最多20张，每月最多400张，虽然很少，不过对于我写博客来说已经够用了。上传之后会自动生成markdown、url等连接格式。</p>
+<p>Ps. 虽然是上传到图床上了，但是考虑到以后还有可能重新自建一个博客，所以还是将一些图片根据实践和上传的文章对应起来保存吧。（虽然现在想的好，估计以后就懒得做了😕）</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Using django upload images and display]]></title>
+        <id>https://cyanineeee.github.io/post/using-django-upload-images-and-display/</id>
+        <link href="https://cyanineeee.github.io/post/using-django-upload-images-and-display/">
+        </link>
+        <updated>2022-10-07T07:22:23.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="django展示图片">Django展示图片</h2>
+<p>上传图片参考前两个，现在只考虑将图片返回到前端展示（同样只是用django，因为ajax等掌握不熟练XD，过几天一定要拿js重新完成一次这些功能！）<br>
+这个算是前两个（<a href="https://cyanineeee.github.io/post/upload-files-by-django/">upload-files-by-django part1</a>和<a href="https://cyanineeee.github.io/post/upload-files-by-djangopart2-without-modelform/">pload-files-by-django part2</a>）的延申，代码已经上传至github，这里只记录一下遇到的问题。</p>
+<blockquote>
+<p><strong><a href="https://github.com/cyanineeee/little-test/">little-test-main</a></strong></p>
+</blockquote>
+<p>Q1. <img src="https://s3.bmp.ovh/imgs/2022/10/07/190f9ea12744178e.png" alt="在forms.py文件和models.py文件的CharField字段没有设置" loading="lazy"><br>
+问题原因：在forms.py文件和models.py文件的CharField字段没有设置必要参数<code>max_length</code>。<br>
+解决方法：补充上即可。</p>
+<p>Q2. <img src="https://s3.bmp.ovh/imgs/2022/10/07/688a0779f77ec4c3.png" alt="命名空间的关键词设置错误" loading="lazy"><br>
+问题原因：在app display中的urls.py文件中命名空间的关键词设置错误，将<code>app_name</code>记成了<code>namespace</code>。同时在前端页面index.html中使用了命名空间。</p>
+<blockquote>
+<figure data-type="image" tabindex="1"><img src="https://s3.bmp.ovh/imgs/2022/10/07/215001f81ac4fe23.png" alt="问题来源" loading="lazy"></figure>
+</blockquote>
+<center> 问题来源</center>
+解决方法：正确关键字`app_name='display'`
+<p>Q3. <img src="https://s3.bmp.ovh/imgs/2022/10/07/c4993639b64cf5aa.png" alt="缺少{%csrf_token%}" loading="lazy"><br>
+问题原因：没有在form表单中添加<code>{%csrf_token%}</code><br>
+解决方法：补上即可。</p>
+<p>Q4. <img src="https://s3.bmp.ovh/imgs/2022/10/07/83a769ba51387010.png" alt="views.py中方法定义错误，返回的不是文件名而是数据库中的文件对象" loading="lazy"><br>
+问题原因：views.py中方法定义错误，返回的不是文件名而是数据库中的文件对象<br>
+解决方法：</p>
+<blockquote>
+<p>view.py修改之后</p>
+<pre><code>from re import U
+from django.shortcuts import render
+from .models import UploadImages
+from .forms import ImageIdentify
+
+def upload(request):
+   tmpimg = ImageIdentify(request.POST,request.FILES)
+   if tmpimg.is_valid():
+       imgname = request.FILES['image'].name
+       image = &gt;UploadImages(imagename=imgname,images=request.FILES['image'])
+       image.save()
+def display():
+   content = UploadImages.objects.all()
+   namelist = []
+   for con in content:
+       temp=con.get_img_name()
+       namelist.append(temp)
+   if namelist == []:
+       return []
+   else:
+       return namelist
+
+def index(request):
+   if request.method == 'POST':
+       upload(request)
+   content = display()
+   print(content)
+   return render(request,'index.html',{'content':content})
+</code></pre>
+</blockquote>
+<h3 id="最后">最后</h3>
+<p>原测试项目已经上传至githun仓库（<strong><a href="https://github.com/cyanineeee/little-test/">little-test-main</a></strong>），并且在我的硬盘上进行了备份~<br>
+总体这个感觉已经是非常熟练~ 不愧于弄了那么久，同时算是对django的熟悉程度更深了一层。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Upload files by Django(Part.2--without ModelForm)]]></title>
+        <id>https://cyanineeee.github.io/post/upload-files-by-djangopart2-without-modelform/</id>
+        <link href="https://cyanineeee.github.io/post/upload-files-by-djangopart2-without-modelform/">
+        </link>
+        <updated>2022-10-07T02:53:05.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="django上传文件part2">Django上传文件(Part.2)</h2>
+<p>只演示上传文件这一单一功能，所以就新建一个项目，一边做一边记录下来。在windows系统下</p>
+<p>与第一部分一样，创建一个新的项目，然后一边做一边记录，然后想起之前的问题就补充说明。</p>
+<h3 id="不使用modelform上传文件">不使用ModelForm上传文件</h3>
+<ol>
+<li>创建项目、应用<br>
+<code>django-admin startproject mysite</code><br>
+<code>python manage.py startapp show</code></li>
+<li>配置mysite/settings.py文件</li>
+</ol>
+<blockquote>
+<pre><code>INSTALLED_APPS = [
+   &quot;django.contrib.admin&quot;,
+			...
+   'show',
+]
+</code></pre>
+<pre><code>MEDIA_ROOT = &quot;D:/Aproject/django-project/mysite/media&quot; #要创建对应文件夹，不过就算忘记创建django也会在上传时自动创建。不过还是建议提前创建，这样对路径更加清楚。这个路径是一个绝对路径。
+MEDIA_URL = '/media/'     #创建这个路由之后，django会自动对每个上传的文件分配路由，具体展示请看接着看。
+</code></pre>
+</blockquote>
+<ol start="3">
+<li>配置show/urls.py<br>
+思路：最终创建两个页面，一个是上传主页面，一个是上传结果页面，结果页面分为上传成功和上传失败，两个结果页面都可以再次继续上传。上传的文件保存在与manage.py存在目录下的media/show/文件夹内。</li>
+</ol>
+<blockquote>
+<pre><code>from django.urls import path
+from . import views
+urlpatterns = [
+   path(&quot;upload/&quot;, views.index,name='index'),
+   path(&quot;result/&quot;, views.result,name='result'),
+]
+</code></pre>
+</blockquote>
+<ol start="4">
+<li>配置forms.py文件和</li>
+</ol>
+<blockquote>
+<p>forms.py文件</p>
+<pre><code>from django import forms
+class UploadFiles(forms.Form): 
+   file = forms.FileField()  
+   #django的forms类可以帮助我们验证上传表单中的数据是否符合要求。我们现在只需要上传一个文件，因此只需要配置FileField字段。
+</code></pre>
+</blockquote>
+<p><strong>自定义的UploadFiles类的属性要和表单中提交的input的name属性相对应，不然在”is_valid()&quot;验证时会失败！！</strong></p>
+<ol start="5">
+<li>配置models.py文件</li>
+</ol>
+<blockquote>
+<p>models.py文件</p>
+<pre><code>from django.db import models
+
+class files(models.Model):
+   filename = models.CharField(max_length=255)
+   documents = models.FileField(upload_to='show')
+#配置文件字段，filename用来储存文件名字；documents储存文件对象，后面的upload_to参数用来规定上传文件的储存地址
+</code></pre>
+</blockquote>
+<p>配置完成之后记得迁移数据库，不然之后运行会报错(<code>python manage.py makemigrations</code>和<code>python manage.py migrate</code>)<br>
+5. 配置views.py方法</p>
+<blockquote>
+<pre><code>from django.shortcuts import render
+from .forms import UploadFiles
+from .models import files
+
+def index(request):
+   return render(request,'index.html')
+
+def result(request):
+   if request.method == 'POST':
+       form = UploadFiles(request.POST,request.FILES) #将表单信息传递给UploadFiles类进行验证
+       name = 'file' 
+       if form.is_valid(): #验证正确返回True
+           filename = request.FILES[name].name
+           tempfile = &gt;files(filename=filename,documents=request.FILES[name]) #实例化files类，并传入上传文件信息初始化
+           tempfile.save()  #使用django内置的文件类保存，不用自己编写保存步骤
+           return render(request,'result.html',{'result':'文件上传成功!'})
+       else:
+           message = form.errors  #如果UploadFiles类(forms表单)验证错误，会返回错误对象
+           return render(request,'result.html',{'result':'文件上传失败!',
+           'message':message,
+           })
+   else:
+       return render(request,'result.html',{'result':'文件上传失败!'})
+</code></pre>
+</blockquote>
+<ol start="7">
+<li>创建show/templates文件夹，在里面配置index.html和result.html</li>
+</ol>
+<blockquote>
+<p>index.html</p>
+<pre><code>&lt;form name=&quot;show&quot; action=&quot;{% url 'result'%}&quot; &gt;method=&quot;POST&quot; enctype =&quot;multipart/form-data&quot;&gt;  
+   {% csrf_token %}   
+   &lt;label for=&quot;fileupload&quot; &gt;请选择要上传的文件&lt;/label&gt;  
+   &lt;input type=&quot;file&quot; name=&quot;file&quot; id=&quot;fileupload&quot;&gt; /*name属性一定要和forms定义的类一样，不然会判断错误*/
+   &lt;input type=&quot;submit&quot; value=&quot;上传&quot;&gt;
+&lt;/form&gt;
+{% block result%}  
+{%endblock%}
+</code></pre>
+<p>result.html</p>
+<pre><code>{% extends 'index.html' %}   
+
+{% block result%}
+{{result}}   
+{{message}}
+{%endblock%}
+</code></pre>
+</blockquote>
+<ol start="8">
+<li>最后的项目结构</li>
+</ol>
+<blockquote>
+<pre><code>D:.
+│  db.sqlite3
+│  manage.py
+│
+├─media
+│  └─show
+│          img401.png #尝试上传的结果
+│
+├─mysite
+│  │  asgi.py
+│  │  settings.py
+│  │  urls.py
+│  │  wsgi.py
+│  │  __init__.py
+│  │
+│  └─__pycache__
+│          settings.cpython-39.pyc
+│          urls.cpython-39.pyc
+│          wsgi.cpython-39.pyc
+│          __init__.cpython-39.pyc
+│
+└─show
+   │  admin.py
+   │  apps.py
+   │  forms.py
+   │  models.py
+   │  tests.py
+   │  urls.py
+   │  views.py
+   │  __init__.py
+   │
+   ├─migrations
+   │  │  0001_initial.py
+   │  │  __init__.py
+   │  │
+   │  └─__pycache__
+   │          0001_initial.cpython-39.pyc
+   │          __init__.cpython-39.pyc
+   │
+   ├─templates
+   │      index.html
+   │      result.html
+   │
+   └─__pycache__  
+           admin.cpython-39.pyc
+           apps.cpython-39.pyc
+           forms.cpython-39.pyc
+           models.cpython-39.pyc
+           urls.cpython-39.pyc
+           views.cpython-39.pyc
+           __init__.cpython-39.pyc
+</code></pre>
+</blockquote>
+<h4 id="总结">总结</h4>
+<p>在重新做一遍注意到了之前没有注意到的事情：forms类的属性要和前端的form表单的input的name属性相对应。<br>
+在解决问题的时候还有很多的ajax实现方法，但现在js掌握不熟练，因此暂时不去实践，希望我能快一点掌握好实现！</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Upload files by Django(Part.1--without Models, Forms, ModelForm)]]></title>
+        <id>https://cyanineeee.github.io/post/upload-files-by-django/</id>
+        <link href="https://cyanineeee.github.io/post/upload-files-by-django/">
+        </link>
+        <updated>2022-10-05T15:00:02.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="django上传文件part1">Django上传文件(Part.1)</h1>
+<p>这几天一直因为这个问题捣鼓了半天，各种问题都出来了。因为太多了而且最后也解决的，于是就只写一个最后总结出来的方法吧。而且因为问题太多，就把写的时候能想到的遇到的问题顺便就列出来。</p>
+<p>只演示上传文件这一单一功能，所以就新建一个项目，一边做一边记录下来。</p>
+<p>Ps.在windows系统下</p>
+<h3 id="不使用models和forms进行上传自定义上传文件图片">不使用models和forms进行上传（自定义上传文件/图片）</h3>
+<p>需求：最终创建两个页面，一个是上传主页面，一个是上传结果页面，结果页面分为上传成功和上传失败，两个结果页面都可以再次继续上传。上传的文件保存在与manage.py存在目录下的media/upload文件夹内。</p>
+<ol>
+<li>新建项目temptation,并新建app。在有django环境下的windows命令窗口中输入<br>
+<code>django-admin startproject temptation</code><br>
+<code>python manage.py startapp upload</code><br>
+生成的项目结构：</li>
+</ol>
+<blockquote>
+<pre><code>D:temptation
+│  manage.py
+│
+├─temptation│  │  asgi.py
+│  │  settings.py
+│  │  urls.py
+│  │  wsgi.py
+│  │  __init__.py
+│  │
+│  └─__pycache__
+│          settings.cpython-39.pyc
+│          __init__.cpython-39.pyc
+│
+└─upload
+   │  admin.py
+   │  apps.py
+   │  models.py
+   │  tests.py
+   │  views.py
+   │  __init__.py
+   │
+   └─migrations
+           __init__.py
+</code></pre>
+</blockquote>
+<ol start="2">
+<li>然后在temptation/settings.py中</li>
+</ol>
+<blockquote>
+<pre><code>INSTALLED_APPS = [
+   &quot;django.contrib.admin&quot;,
+		......
+	 'upload',//添加
+</code></pre>
+</blockquote>
+<p>Ps. 此时不对TEMPALTES中的DIRS进行配置，这样在之后配置html文件时就可以直接在upload下创建templates文件夹，然后直接将html文件放入。因为不对路径进行配置django会先寻找manage.py所在的文件夹中是否有templates文件夹，然后再在每个app下寻找templates文件夹，直到找到为止。<br>
+3. temptation/urls.py中:</p>
+<blockquote>
+<pre><code>from django.contrib import admin
+from django.urls import path,include//添加
+
+urlpatterns = [
+  path(&quot;admin/&quot;, admin.site.urls),
+   path(&quot;upload/&quot;, include('upload.urls')),//添加
+]
+</code></pre>
+</blockquote>
+<ol start="4">
+<li>在upload文件中创建urls.py文件，并配置：</li>
+</ol>
+<blockquote>
+<pre><code>from django.urls import path
+from . import views
+
+urlpatterns = [
+   path('index/',views.index,name='index'),
+   path('result/',views.result,name='result')
+]
+</code></pre>
+</blockquote>
+<ol start="5">
+<li>填写视图方法</li>
+</ol>
+<blockquote>
+<pre><code>from django.shortcuts import render
+def index(request):    //配置基础页面 
+   return render(request,'index.html')
+
+def result(request):
+   if request.method == &quot;POST&quot;: 
+       file = request.FILES['file']
+       filename = file.name
+       filepath = &quot;media/upload/&quot; + filename  //创建文件保存路径，是一个相对路径，相对于manage.py所在的文件夹
+       with open(filepath,'wb+') as f:  //写入文件
+           for chunk in file.chunks():  //分块写入文件，避免文件太大占满内存
+               f.write(chunk)
+           f.close()
+       return render(request,'result.html',{'result':'上传文件成功！'})
+   else:
+       return render(request,'result.html',{&quot;result&quot;:'上传文件失败！'})
+</code></pre>
+</blockquote>
+<ol start="6">
+<li>创建templates文件夹，并创建index.html和result.html页面<br>
+index.html</li>
+</ol>
+<blockquote>
+<pre><code>&lt;form name=&quot;show&quot; action=&quot;{% url 'result'%}&quot; method=&quot;POST&quot; enctype =&quot;multipart/form-data&quot;&gt;   /*创建form表单*/
+/*action表示表单上传至result.html页面，如果action为空那么不会有页面转跳，文件也上传失败。*/
+   {% csrf_token %}   /*django内置的上传用户审查，目前只需要记住上传文件的时候要加上*/
+   &lt;label for=&quot;fileupload&quot; &gt;请选择要上传的文件&lt;/label&gt;  /*for属性表示将label标签和id为fileupload的input标签关联*/
+   &lt;input type=&quot;file&quot; name=&quot;file&quot; id=&quot;fileupload&quot;&gt;
+   &lt;input type=&quot;submit&quot; value=&quot;上传&quot;&gt;
+&lt;/form&gt;
+{% block result%}  /*django的继承模板，用于做出类似于不刷新页面返回结果的效果*/
+{%endblock%}
+</code></pre>
+</blockquote>
+<p>result.html</p>
+<blockquote>
+<pre><code>{% extends 'index.html' %}   /*继承index.html模板*/
+
+{% block result%}
+{{result}}   /*显示上传结果*/
+{%endblock%}
+</code></pre>
+</blockquote>
+<ol start="7">
+<li>到此结束，列举一下最后的项目结构</li>
+</ol>
+<blockquote>
+<pre><code>D:temptation
+│  db.sqlite3
+│  manage.py
+│
+├─media
+│  └─upload
+│          img401.png
+│          img402.png
+│
+├─temptation
+│  │  asgi.py
+│  │  settings.py
+│  │  urls.py
+│  │  wsgi.py
+│  │  __init__.py
+│  │
+│  └─__pycache__
+│          settings.cpython-39.pyc
+│          urls.cpython-39.pyc
+│          wsgi.cpython-39.pyc
+│          __init__.cpython-39.pyc
+│
+└─upload
+   │  admin.py
+   │  apps.py
+   │  models.py
+   │  tests.py
+   │  urls.py
+   │  views.py
+   │  __init__.py
+   │
+   ├─migrations
+   │  │  __init__.py
+   │  │
+   │  └─__pycache__
+   │          __init__.cpython-39.pyc
+   │
+   ├─templates
+   │      index.html
+   │      result.html
+   │
+   └─__pycache__
+           admin.cpython-39.pyc
+           apps.cpython-39.pyc
+           models.cpython-39.pyc
+           urls.cpython-39.pyc
+           views.cpython-39.pyc
+           __init__.cpython-39.pyc
+</code></pre>
+</blockquote>
+<p>评价：这种方法最简单，不需要很多其他的配置，文件路径和名字也都可以自定义（比如换成上传时间）。但是缺少对上传文件格式的判断、对表单传来数据的审查、没有存储到数据库不方便管理等。<br>
+Ps. 这个项目完全可以不用创建数据库（也就是使用<code>python manage.py makemigrations</code>和<code>python manage.py migrate</code>），但是强迫症忍不了红色的提示😳</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[The import system of python ]]></title>
+        <id>https://cyanineeee.github.io/post/the-import-system-of-python/</id>
+        <link href="https://cyanineeee.github.io/post/the-import-system-of-python/">
+        </link>
+        <updated>2022-10-04T13:35:57.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="python的import系统">python的import系统</h2>
+<p><strong>import 模块</strong><br>
+导入了一个模块，相当于岛屿了一个文件夹，是一个相对路径。<br>
+使用时需要 <code>模块.函数</code><br>
+<strong>from x import y</strong><br>
+导入了一个模块中的一个函数，又或者相当于一个文件夹中的一个文件。使用时直接使用import后面的函数名就可以。<br>
+<strong>from x import y</strong><br>
+导入一个模块中所有的函数<br>
+<strong>from . import y</strong><br>
+从当前文件夹中导入y<br>
+Ps. 较为复杂，目前暂不深入。</p>
+<blockquote>
+<p><a href="https://www.zhihu.com/question/28688151/answer/1503856101">简单摘录</a><br>
+假设该<code>from . import x</code>语句存在于<code>proj/test.py</code>中，它会导入同级目录下的<code>__init__.py</code>即<code>proj/__init__.py</code>中的x对象，如果没有<code>proj/__init__.py</code>或有那个文件但是文件中不存在x对象，就导入<code>proj/x/__init__.py</code>，如果还没有，就导入<code>proj/x.py</code>，还没有就报错。其中同级是按<code>__name__</code>的前一部分或 <code>__package__ </code>确定的。如果用<code>python proj/test.py</code>运行，<strong>name__就是__main</strong>，<strong>package__是None，就会报错。如果用python -m proj.test运行，虽然__name__还是__main</strong>，但是__package__是proj，就能成功导入，即使proj/<strong>init</strong>.py不存在也行。</p>
+</blockquote>
+<p><strong>from ... import y</strong><br>
+从上一级文件夹导入y<br>
+<strong>from ...x import y</strong><br>
+从上一级文件夹中的x文件夹里的__init__.py程序里导入y</p>
+<p><strong>import x as b</strong><br>
+将x命名为b导入<br>
+<strong>from x import y as b</strong><br>
+导入x中的y并命名为b</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[The attribute of form: name,for,value ]]></title>
+        <id>https://cyanineeee.github.io/post/the-attribute-of-form-nameforvalue/</id>
+        <link href="https://cyanineeee.github.io/post/the-attribute-of-form-nameforvalue/">
+        </link>
+        <updated>2022-10-04T12:10:56.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="form表单中的一些元素和属性">form表单中的一些元素和属性</h2>
+<blockquote>
+<ol>
+<li>label标签中for属性的作用：用于将label与input关联起来。简单说就是点击了for关联的label标签会弹出与点击input标签一样的效果。并且for的命名要与input标签的id一致才能表示关联。<br>
+Ps.如果label包含input，可以不适用for依然与input关联（隐形关联）</li>
+<li>name属性用于对提交到服务器后的表单数据进行标识，只有设置了name属性的表单元素才能被js或django或者其他语言捕捉。</li>
+<li>value属性</li>
+</ol>
+<blockquote>
+<p>value是控件的值，input 标签的 value 属性的作用是由 input 标签的 type 属性的值决定的</p>
+<ul>
+<li>当 type 的取值为 button、reset、submit 中的其中一个时，此时 value 属性的值表示的是按钮上显示的文本。</li>
+<li>当type 的取值为 text、password、hidden 中的其中一个时，此时 value属性的值表示的是输入框中显示的初始值，此初始值可以更改，并且在提交表单时，value属性的值会发送给服务器（既是初始值，也是提交给服务器的值）。</li>
+<li>当 type 的取值为 checkbox、radio 中的其中一个时，此时value 属性的值表示的是提交给服务器的值 当 type 的取值为 image时，点击它提交表单后，会将用户的点击位置相对于图像左上角的 x 坐标和 y 坐标提交给服务器。</li>
+<li>checkbox 型的 input标签的不足之处在于：提交表单时，只有处于勾选状态的复选框的数据值才会发送给服务器。也就是说，如果没有任何一个复选框被选中，那么服务器就不会收到与其相关的数据项。<br>
+当设置 input 标签的 type 属性值为checkbox 或者 radio 时，必须同时设置 input 标签的 value 属性</li>
+<li>当 type=“file” 时，不能使用 value 属性</li>
+</ul>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>————————————————<br>
+参考来源<a href="https://blog.csdn.net/tyuiotyuio/article/details/105163441">name,for,value区别</a></p>
+</blockquote>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[The time modules for python: datetime and time.]]></title>
+        <id>https://cyanineeee.github.io/post/the-time-modules-for-python-datetime-and-time/</id>
+        <link href="https://cyanineeee.github.io/post/the-time-modules-for-python-datetime-and-time/">
+        </link>
+        <updated>2022-10-04T02:33:15.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="datetime">datetime</h1>
+<blockquote>
+<p>datetime包含常用的几个对象：</p>
+<blockquote>
+<p>datetime.date  处理年月日<br>
+datetime.time   处理时分秒<br>
+datetime.datetime   处理年月日+时分秒</p>
+</blockquote>
+</blockquote>
+<h3 id="datetime中的date对象">datetime中的date对象</h3>
+<pre><code>from datetime import date
+now = date.today()  
+//datetime.date(2022, 10, 3)
+
+someday = date(2015,10,9) 
+//datetime.date(2015, 10, 9)
+
+between = now - someday 
+//datetime.timedelta(days=2552)
+
+print(date.max,'----&gt;',date.min) 
+//9999-12-31 ----&gt; 0001-01-01
+</code></pre>
+<p>today()按格式返回当前日期，可以通过date()创建日期，日期可以加减，date日期有最大最小值，超过会产生错误。如果进行print输出的话，相当于调用isoformat()函数输出。</p>
+<pre><code>from datetime import date
+date.today().isoformat() //'2022-10-04'
+</code></pre>
+<p>date中的iosformat()函数返回一个以ISO 8601格式 <code>YYYY-MM-DD</code>来表示日期字符串。<br>
+Ps.</p>
+<ol>
+<li>date类的<code>__str__</code>等价于isoformat()。</li>
+<li>date对象的其他应用('//'表示结果，‘#’表示注释)</li>
+</ol>
+<pre><code>from datetime import date
+d = date.fromordinal(730920) # 730920th day after 1. 1. 0001
+d
+//datetime.date(2002, 3, 11)
+
+#Methods related to formatting string output
+ d.isoformat()
+//'2002-03-11'
+ d.strftime(&quot;%d/%m/%y&quot;)
+//'11/03/02'
+d.strftime(&quot;%A %d. %B %Y&quot;)
+//'Monday 11. March 2002'
+d.ctime()
+//'Mon Mar 11 00:00:00 2002'4
+ 'The {1} is {0:%d}, the {2} is {0:%B}.'.format(d, &quot;day&quot;, &quot;month&quot;)
+//'The day is 11, the month is March.'
+
+#Methods for to extracting 'components' under different calendars
+t = d.timetuple()
+for i in t:     
+	print(i)
+2002                # year
+3                   # month
+11                  # day
+0
+0
+0
+0                   # weekday (0 = Monday)
+70                  # 70th day in the year
+-1
+ic = d.isocalendar()
+for i in ic:    
+	print(i)
+2002                # ISO year
+11                  # ISO week number
+1                   # ISO day number ( 1 = Monday )
+A date object is immutable; all operations produce a new object
+d.replace(year=2005)
+datetime.date(2005, 3, 11)
+</code></pre>
+<p>摘选自<a href="https://docs.python.org/zh-cn/3/library/datetime.html#module-datetime">python文档</a></p>
+<h3 id="datetime中的time对象">datetime中的time对象</h3>
+<pre><code>from datetime import time
+time(hour=12, minute=34, second=56, microsecond=123456).isoformat()
+//'12:34:56.123456'
+a = time(hour=12, minute=34, second=56, microsecond=123456)
+print(a)
+//12:34:56.123456
+</code></pre>
+<p>###datetime中的datetime对象</p>
+<pre><code>from datetime import datetime
+now = datetime.now()
+//datetime.datetime(2022, 10, 4, 19, 22, 36, 906117)
+print(now)
+//2022-10-04 19:22:36.906117
+
+datetime(2019, 5, 18, 15, 17, 8, 132263).isoformat()
+//'2019-05-18T15:17:08.132263'
+
+d = datetime(2019, 5, 18, 15, 17, 8, 132263).ctime()
+d
+//'Sat May 18 15:17:08 2019'
+</code></pre>
+<h3 id="一个重要的函数-strfmat">一个重要的函数 strfmat()</h3>
+<p>strfmat包含在datetime模块下的这三个对象中<br>
+可以将datetime对象以给定形式输出</p>
+<pre><code>from datetime import strfmat
+import datetime
+print(strftime(&quot;%Y-%m-%d,%H-%M-%S&quot;,time.localtime()))
+//2022-10-04,19-33-51
+
+print(strftime('%B-%b-%A-%a-%I-%p',time.localtime()))
+//October-Oct-Tuesday-Tue-07-PM
+
+fmt='%Y=%m=%b=%d=%A'
+print(strftime(fmt,time.localtime()))
+//2022=10=Oct=04=Tuesday
+</code></pre>
+<p>具体参数参考<a href="https://docs.python.org/zh-cn/3/library/datetime.html#strftime-strptime-behavior">python datetime模块</a>中的 &quot;strftime() 和 strptime() 的行为&quot;部分</p>
+<h4 id="一些补充">一些补充</h4>
+<pre><code>#当前时区的时间
+print(time.localtime())
+now = time.time()
+print(time.localtime(now))
+print(&quot;=&quot;*15)
+#UTC时区下的时间
+print(time.gmtime())
+
+#输出结果
+/*time.struct_time(tm_year=2022, tm_mon=10, tm_mday=4, tm_hour=19, tm_min=39, tm_sec=8, tm_wday=1, tm_yday=277, tm_isdst=0)
+time.struct_time(tm_year=2022, tm_mon=10, tm_mday=4, tm_hour=19, tm_min=39, tm_sec=8, tm_wday=1, tm_yday=277, tm_isdst=0)
+===============
+time.struct_time(tm_year=2022, tm_mon=10, tm_mday=4, tm_hour=11, tm_min=39, tm_sec=8, tm_wday=1, tm_yday=277, tm_isdst=0)*/
+</code></pre>
+]]></content>
+    </entry>
+</feed>
