@@ -1,0 +1,609 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>django学习 -- 可以感受到最原始的django框架是前后端不分离的 -- part.1 | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1688824813057">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="django学习 -- 可以感受到最原始的django框架是前后端不分离的 -- part.1 | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+
+学习视频
+
+
+1.请求和响应
+
+get post redirect
+
+2.数据库操作
+
+mysql+pymsql
+ORM框架 -&gt; 帮助我们处理sql语句 =&gt; pip install mysqlclient
+创建修改删除数..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1688824813057" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              django学习 -- 可以感受到最原始的django框架是前后端不分离的 -- part.1
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-27
+              </span>
+              <span>
+                18 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <ul>
+<li>
+<h2 id="学习视频"><strong><a href="https://www.bilibili.com/video/BV1NL41157ph/?p=45&amp;spm_id_from=pageDriver&amp;vd_source=c66937bc5207a56bafe7811cb2b0c4da">学习视频</a></strong></h2>
+</li>
+</ul>
+<h3 id="1请求和响应">1.请求和响应</h3>
+<ul>
+<li>get post redirect</li>
+</ul>
+<h3 id="2数据库操作">2.数据库操作</h3>
+<ul>
+<li>mysql+pymsql</li>
+<li>ORM框架 -&gt; 帮助我们处理sql语句 =&gt; pip install mysqlclient<br>
+创建修改删除数据中的表（不用写sql语句）<br>
+操作表中的数据<br>
+=&gt; 创建数据库 django连接数据<br>
+PS. 需要在setting.py进行设置</li>
+</ul>
+<h3 id="3让django帮助创建数据库表">3.让django帮助创建数据库表</h3>
+<ul>
+<li>django会通过model中的类帮助生成sql创建表和字段<br>
+类名代表表明 属性代表列名</li>
+</ul>
+<pre><code class="language-python">class UserInfo(models.Model):
+    name = models.CharField(max_length=32)
+    password = models.CharField(max_length=64)
+</code></pre>
+<h3 id="4执行命令">4.执行命令</h3>
+<ul>
+<li>需要提前注册app -&gt; 在setting.py中注册<br>
+python manage.py makemigrations<br>
+python manage.py migrate</li>
+</ul>
+<h3 id="5需要注意">5.需要注意</h3>
+<ul>
+<li>在已经有的model类中添加属性 可能会导致原来已经有的数据缺失新增加的列的数据<br>
+django给出了两个选择，一是在命令行中默认添加输入，二是在新增加的属性字段中增加 <code>default=</code>字段，代表给原来没有的缺失值赋值。例如：<br>
+<code>age = models.CharField(defalut=18)</code><br>
+或者设置可以为空<br>
+<code>age = models.CharField(null=True,blank=True)</code></li>
+</ul>
+<h3 id="6通过django向表中插入数据">6.通过django向表中插入数据</h3>
+<ul>
+<li>
+<p><code>UserInfo.objects.create(name='cyanine',password=&quot;123456&quot;)</code> 插入数据 需要类中的属性对应<br>
+<code>a = UserInfo.objects.all()</code>获取所有数据 以列表返回，其中每一个元素都是一个对象 通过<code>.属性</code>获取具体的数据<code>a.name</code>，结合<code>.filter()</code>可以进行筛选查询<br>
+<code>.first()</code>获取获取到的第一个对象</p>
+</li>
+<li>
+<p>删除数据<br>
+<code>.delete()</code><br>
+可以添加<code>filter</code>进行筛选 例如<code>UserInfo.objects.filter(name='cyanine').delete()</code> 删除所有name为cyanine的数据<br>
+使用<code>.all()</code>选择全部<code>UserInfo.objects.all().delete()</code>删除这张表中的所有数据</p>
+</li>
+<li>
+<p>更新数据<br>
+<code>UserInfo.objects.all().updata(password=123456)</code>更新所有的password为123456<br>
+还可以结合<code>.filter()</code>进行筛选</p>
+</li>
+</ul>
+<h3 id="7django表单如果不写action-那么默认提交就是向当前页面发送一个post请求">7.django表单如果不写action 那么默认提交就是向当前页面发送一个post请求</h3>
+<h3 id="8django中的url命名能避免对url的硬编码">8.django中的url命名能避免对url的硬编码，</h3>
+<ul>
+<li>例如修改一个url 的路径如果以前在html采用的是硬编码，直接写对应的会导致后面修改维护极为困难。<br>
+但是如果采用url命名空间，那么修改的url并不会直接影响到，django会通过url的命名访问到，而不是硬编码。<code>{% url 'url_name' other_param%}</code>  这个url_name 就是在urls.py文件中的<code>path('url/example', views.function,name = url_name)</code>的name为url从的重命名，这样修改path对应的url，就不用在维护前端的页面了。</li>
+</ul>
+<h3 id="9model添加约束-数据库的约束">9.model添加约束 (数据库的约束)</h3>
+<ul>
+<li>例如员工表和部门表之间的关系，让员工表和部门表关联，通过<code>ForeignKry</code>方法中的<code>to</code>和<code>to_field</code>参数在django中设置。用途是可以方便对输入数据的合法性判断，例如员工不能属于一个不存在的部门，就可以很方便的进行判断。</li>
+<li>在员工表中<br>
+<code>department = models.ForeignKey(to = 'Department', to_field = 'id')</code><br>
+这就将员工表和部门表进行了关联，员工的部门只能属于Depatment中的一个；<code>to</code>表示关联的表名，<code>to_field</code>表明关联的表的一个列名字段。要注意的是，django在储存这样的字段时默认命名方式是<code>关联表名_id</code>（例如这个就是<code>depaetment_id</code>）。<br>
+于此对应，在获取的时候，如果直接通过字段/属性获取的话，例如<code>obj.联表名_id</code>，获取到的时储存在这张表中的对应关联表的数字，而不是我们想要的具体指代，因此django规定了如果直接<code>.联表名</code>就可以获取到关联表对应的那一行数据（封装为一个queryobj对象），然后就可以继续通过关联表内的属性进行查找。例如，部门表中一共有两个部门，字段为（id,部门名），内容为（1，主管部）（2，运行部），员工表关联</li>
+<li>级联删除 置空null<br>
+现在设想一种情况，如果部门表中的一个部门取消掉，那么与之关联的员工应该如何处理呢？常用的就是两种操作：将他们一并删除（这就是级联删除）；还有一种就是将他们设置为null。对应的这两种方式在django中需要这样设置：<br>
+<code>department = models.ForeignKey(to = 'Department', to_field = 'id',on_delete=models.CASCADE)</code> 级联删除<br>
+<code>department = models.ForeignKey(to = 'Department', to_field = 'id',null=True,blank=True,on_delete=models.SET_NULL)</code> 置空  需要注意的是 置空的前提就是这个字段可以为空<code>null = True</code> 这些都是django中的操作。</li>
+</ul>
+<h3 id="10性别存储">10.性别存储</h3>
+<ul>
+<li>model的choice 与数据库无关 是django的特性 可以方便的进行固定的选择储存。例如男女，单独为男女添加一个char字段会较为浪费空间，因此使用1/2这样的数字代替，但是数字不易读，因此django设计出了<code>choice</code>参数。</li>
+</ul>
+<pre><code class="language-python">gender_choice = (
+    (1,'男'),
+    (2,'女'),
+) #注意是元组套元组
+gender = models.SmallIntegerField(verbose_name='性别',choices = gender_choice) #verbose_name就是对列名（属性）的注解 可写可不写 写上为好
+#SmallIntegerField是小整数字段
+</code></pre>
+<ul>
+<li>这样字段的获取：如果直接<code>obj.gender</code>获取的就是数据库中对应的数字，但是django封装了一个判断方法，可以很方便的帮我们判断，然后返回的是我们希望现实的字段：<code>obj.get_gender_display()</code>。其中函数名字组成方式为<code>get_属性名字/字段名字_display()</code></li>
+</ul>
+<h3 id="11form和modelform">11.Form和ModelForm</h3>
+<ul>
+<li>11.1 form类 自动生成表单</li>
+</ul>
+<pre><code class="language-python">#views.py
+class MyForm(Form):
+    user = forms.CharField(widget=forms.Input)
+    password = forms.CharField(widget=forms.Input)
+    email = forms.CharField(widget=forms.Input)
+def user_add(request):
+    form = MyForm() #实力化一个form表单类
+    return render（request,'user_add.html',{'form':form}
+</code></pre>
+<pre><code class="language-html">&lt;!-- user_add.html --&gt;
+&lt;form method='post'&gt;
+{% for i in form %}
+{{ i }}
+{% endfor %}
+&lt;!-- 或者也可以一个一个自己写出来 比如{{form.user}} {{form.password}} --&gt;
+&lt;/form&gt;
+</code></pre>
+<ul>
+<li>11.2 ModelForm组件
+<ul>
+<li>实现数据库表单字段和前端form表单字段的自动生成</li>
+</ul>
+<ul>
+<li>对连接表/外键限制自动生成选择框</li>
+<li>定义models类中的<code>__str__</code>方法实现对连接表属性的直接展示</li>
+<li>定义生成表单样式的属性</li>
+<li><code>{{ obj.label }}</code>可以遍历出在modelform定义字段中的<code>label</code>参数<br>
+接下来是具体的代码展示 有点太多了...<br>
+记得添加了路由！！！（这个就不展示在代码中了，）</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python">#views.py
+#根据staff表单生成modelform类
+class staffMdoelForm(ModelForm):
+    class Meta:
+        model = Staff
+        fields = ['name','age','gender','phonenumber','create_time']
+
+#添加员工
+def staff_add(request):
+    form = staffMdoelForm() #实例化modelform类 
+    return render(request,'staff_add.html',{
+        'form':form
+        })
+</code></pre>
+<pre><code class="language-html">&lt;div style=&quot;width:50%;margin-left: 25%;margin-top: 25px;&quot;&gt;
+    &lt;div class=&quot;container&quot; &gt;
+        &lt;form method=&quot;post&quot;&gt;
+            &lt;h2&gt;添加新的员工信息&lt;/h2&gt;
+            {% csrf_token %}
+            {% for field in form %}
+            &lt;div class=&quot;mb-3&quot;&gt;
+                &lt;label class=&quot;form-label&quot;&gt;{{field.label}}&lt;/label&gt;
+                {{ field }}
+            &lt;/div&gt;
+            {% endfor %}
+            &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;&gt;确认添加&lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;    
+&lt;/div&gt;
+</code></pre>
+<pre><code class="language-python">#连接表modelform处理（html不用做太多改变）
+#在models.py中的从表添加__str__方法 让调用这个类的时候返回的不再是一个queryobject而是__str__定义好的返回值
+class Staff(models.Model):
+    name = models.CharField(verbose_name='员工姓名',max_length=32)
+......
+    def __str__(self):
+        return self.name
+#在views.py中定义modelform类的时候 字段选择直接写定义的而不是在数据库表单中的字段
+class userModelForm(ModelForm):
+    class Meta:
+        model = UserInfo #注 Userinfo表单中的identify是引用了Staff表单中的id作为外键
+        fields = ['name','password','identify']
+</code></pre>
+<h3 id="12重定向">12.重定向</h3>
+<ul>
+<li><code>from django.shortcuts import redirect</code>或者<code>from django.http import HttpResponseRedirect</code><br>
+return一个重定向url的实例即可</li>
+</ul>
+<h3 id="13前端url实现删除请求">13.前端url实现删除请求</h3>
+<ul>
+<li>通过前端发送一个带有删除目标信息的GET请求，然后后端获取删除即可，但是这个带有删除目标信息的url该如何组装呢？通过url的组成规律，添加<code>/?id=</code>信息传递，代码如下：<br>
+<code>&lt;a href=&quot;/login/manage/delete/?id={{user.0}}&quot;&gt;删除&lt;/a&gt;</code>  #这其中的{{id.0}}通过django的模板语法动态赋予目标的id信息<br>
+对应处理函数（记得注册url）</li>
+</ul>
+<pre><code class="language-python">def delete_user_info(request):
+    id = request.GET.get('id')
+    UserInfo.objects.filter(id = id).delete()
+    return HttpResponseRedirect('/login/manage/')
+</code></pre>
+<h3 id="14django的模板语法">14.django的模板语法</h3>
+<ul>
+<li>其中最开始的<code>{% extends 'nav.html'%}</code>必须处于子页面的第一个加载位置，意味着如果前面有哪怕<code>{% load static %}</code>也会报错。</li>
+</ul>
+<h3 id="15django正则匹配url">15.django正则匹配url</h3>
+<ul>
+<li>这样就不用前端写带有get参数的url，后端也不需要get获取,而是直接作为一个解析好的参数传递给视图进行处理，二是直接及进行请求和解析。同时也要注意，在url中添加的正则顺序不影响在命名url中的参数顺序</li>
+</ul>
+<ul>
+<li>具体如下：</li>
+</ul>
+<pre><code class="language-python">#html中
+&lt;a href=&quot;{% url 'edit' user.0 %}&quot;&gt;操作...&lt;/a&gt;
+#url中
+path('login/manage/&lt;int:id&gt;/edit/',views.edit_user_info,name = 'edit')
+#views中
+def edit_user_info(request,id):
+    default_userinfo = UserInfo.objects.filter(id = id).first()
+    ....
+</code></pre>
+<p>可以看到<code>&lt;int:id&gt;</code>是在<code>/edit/</code>之前的，但是在html的url中这个顺序不影响。同时在views中对应的函数可以直接接收到url中正则匹配到的参数，而不用再通过解析get请求获取。</p>
+<h3 id="16在django的模板中可以通过objget_联表名_display获取到和后端get_联表名_display的效果直接返回对照过后的结果而不是对应的关联id">16.在django的模板中，可以通过<code>obj.get_联表名_display</code>获取到和后端<code>get_联表名_display()</code>的效果，直接返回对照过后的结果而不是对应的关联id。</h3>
+<h3 id="17django的模板可以进行的额外操作">17.django的模板可以进行的额外操作：</h3>
+<ul>
+<li><code>{{number : add 1}}</code>就是python的<code>+=1</code>操作，<code>{{datetime | date :'Y-m-d}}</code>就是python中的<code>strftime()</code>函数(要注意的是里面的格式不需要带<code>%</code>)</li>
+</ul>
+<h3 id="18modelform的字段校验函数">18.modelform的字段校验函数</h3>
+<ul>
+<li><code>is_valid()</code>检验提交post请求中的form表单中的字段是否为空，具体的字段就是在<code>modelform</code>中<code>fields</code>列表定义的那些.</li>
+<li>同时还可以在modelforms类中进行字段校验 错误的信息会保存在用post请求实例化的modelform中。</li>
+</ul>
+<pre><code class="language-python">class staffMdoelForm(ModelForm):
+    phonenumber = forms.CharField(label='电话号码',max_length=11,min_length=11)#进行的字段校验 
+    #规定电话号码的长度为11位
+    #还可以通过validators参数进行正则筛选
+    class Meta:
+        model = Staff
+        fields = ['name','age','gender','phonenumber','create_time']
+    phonenumber = forms.CharField(label='电话号码',max_length=11,min_length=11)
+    #规定电话号码的长度为11位
+    #还可以通过validators参数进行正则筛选
+</code></pre>
+<h3 id="19调整返回的提示信息为汉语">19.调整返回的提示信息为汉语</h3>
+<ul>
+<li>通过修改setting.py文件中的语言项</li>
+</ul>
+<pre><code class="language-python">#setting.py
+# LANGUAGE_CODE = &quot;en-us&quot; 注释掉
+LANGUAGE_CODE = &quot;zh-hans&quot; #添加
+</code></pre>
+<h3 id="20modelform中instance参数">20.modelform中<code>instance</code>参数</h3>
+<ul>
+<li>通过设置单条数据对表单进行填充，例如：</li>
+</ul>
+<pre><code class="language-python">#views.py中的一个方法
+default_userinfo = UserInfo.objects.filter(id = id).first() #根据id在数据库中获取对应的一条数据
+userform = userModelForm(instance=default_userinfo) # 通过instance参数设定一个实例化的表单 让他在前端渲染的时候自动在value上显示从数据库中拿到的默认值
+</code></pre>
+<ul>
+<li>通过<code>instance</code>参数和<code>data</code>参数可以实现数据库数据的更新</li>
+</ul>
+<pre><code class="language-python">#在views.py中的某个函数
+default_userinfo = UserInfo.objects.filter(id = id).first()
+userform = userModelForm(data=request.POST,instance=default_userinfo)
+if userform.is_valid():
+    userform.save()
+    return redirect('/login/manage/')
+else:
+    return render(request,'edit_info.html',{
+        'userform': userform,
+    })
+</code></pre>
+<ul>
+<li>如果想在用户输入以外的字段进行更新，那么在modelform实例化之后通过<code>instacne</code>属性可以修改：</li>
+</ul>
+<pre><code class="language-python">userform = userModelForm(data=request.POST,instance=default_userinfo)
+# useform.instance.字段 =  值
+</code></pre>
+<h3 id="21django查询排序">21.django查询排序</h3>
+<ul>
+<li><code>obj.objects.all().order_by('属性名')</code><br>
+如果给属性名前面添加减号 代表逆向（高到低）排序</li>
+</ul>
+<h3 id="22给原有的表中添加新的字段产生错误djangocoreexceptionsvalidationerror-error">22.给原有的表中添加新的字段产生错误<code>&quot;django.core.exceptions.ValidationError&quot; error</code></h3>
+<ul>
+<li>产生原因：大概率是因为追加新的字段设置默认值的时候产生的格式错误，例如datetime格式但是没有设置默认或者默认格式错误，造成这样的原因。</li>
+<li>解决方法：重置所有的<code>migrations</code></li>
+<li>操作：删除migrations文件夹下除了<code>__init__.py</code>文件以外所有的文件，然后重新执行数据库迁移命令：<code>python manage.py makemigrations</code>, <code>python manage.py migrate</code></li>
+<li>如果还不成功可能是因为数据库中原本存在的数据导致，将数据库清库（所有表删除），然后在执行即可。</li>
+</ul>
+<h3 id="23django报错orderform-object-has-no-attribute-get">23.django报错<code>'orderForm' object has no attribute 'get'</code></h3>
+<ul>
+<li>原因是在设置<code>input</code>标签的样式的时候重写的父类方法出错，参数多写了一个<code>self</code></li>
+</ul>
+<pre><code class="language-python">#错误源码
+    def __init__(self,*arg,**kwargs):
+        super().__init__(self,*arg,**kwargs)
+        for name, field in self.fields.items():
+            # print(name,field) #这个是展示 self.fields.items()可以直接拿到定义在Meta中的fields字段
+            field.widget.attrs = {'class' : 'form-control'} #为生成的表单input赋予css属性 
+</code></pre>
+<ul>
+<li>解决方法 ： 去掉<code>super().__init__(self,*arg,**kwargs)</code>这一行中的self即可，正确写法：<br>
+<code>  super().__init__(*arg,**kwargs)</code></li>
+<li>探究一下为什么<code>super</code>不需要<code>self</code>作为方法的第一个参数：<br>
+因为<code>super()</code>是一个类 <a href="https://mozillazg.com/2016/12/python-super-is-not-as-simple-as-you-thought.html#hidsuper">reference</a> -- 感觉好多...暂时搁置一下...😖</li>
+</ul>
+<h3 id="24关闭浏览器校验">24.关闭浏览器校验</h3>
+<p>在form表单添加<code>novalidate</code></p>
+<pre><code class="language-html">&lt;form method=&quot;post&quot; novalidate &gt;
+</code></pre>
+<h3 id="25关于models中null和black字段">25.关于models中null和black字段</h3>
+<ul>
+<li>需要同时开启，但是数据库更推荐默认值为空值，因此设置<code>default=None</code>而不是<code>null</code>。<br>
+如果设置<code>blank=True</code>但是不开启<code>null=True</code>，那么在插入的时候，如果传回来的数据为空，插入会报错不能为null字段...总之还是很迷惑的报错....但是解决方法还是最好设置两个都为True并且设置默认字段为<code>None</code>。如果为<code>null</code>，那么在数据传入到前端的时候会默认输出null或者none，而不是将那片区域置空，对于前端的用户输入逻辑不太友好。</li>
+</ul>
+<h3 id="26modelforms便捷写法">26.modelforms便捷写法</h3>
+<ul>
+<li>在添加fields的时候，可以用<code>__all__</code>一次性获取全部，<code>exclude = [ 排除的字段 ]</code>排除掉不要的字段。</li>
+</ul>
+<pre><code class="language-python">class orderForm(ModelForm):
+    class Meta():
+        model = Orderform
+        fields = &quot;__all__&quot; #注意要引号
+        # exclude = ['字段1','字段二', .... ]
+</code></pre>
+<h3 id="27后端表单正则校验">27.后端表单正则校验</h3>
+<ul>
+<li>在modelforms类中声明字段，然后通过validators参数设置正则表达式：</li>
+</ul>
+<pre><code class="language-python">from django.core.validators import RegexValidator #需要导入正则类
+class exampleModelForms(forms.ModelForm):
+    moblie = forms.CharField(
+        label = '手机号码',
+        validactors = [RegexValidator(r'^1[3-9]\d{9}$','手机号格式错误')]       
+        #校验失败返回后面的提示信息而不是默认的了~ 
+    )
+</code></pre>
+<h3 id="28钩子方法进行字段校验">28.钩子方法进行字段校验</h3>
+<ul>
+<li><a href="https://www.cnblogs.com/open-yang/p/11223175.html">详细的</a></li>
+<li>这里摘列出常用的代码结果</li>
+</ul>
+<pre><code class="language-python">class exampleModelForms(forms.ModelForm):
+   def clean_字段名(self): #这个需要在一个modelform类中 这个函数名modelform会自动生成对应的方法
+           pass 
+           name = self.cleaned_data.get('name')
+           if name=='admin':
+               raise ValidationError('admin是超级管理员，不能注册！')#这个错误会直接扔进该字段的错误类别中：name.errors
+           return self.cleaned_data.get('name')
+</code></pre>
+<h3 id="29规定modelform中不可编辑的部分">29.规定modelform中不可编辑的部分</h3>
+<p>在modelform中字段中设置参数<code>disabled= True</code>即可，这样在前端页面渲染出来的这一条字段是不可以更改的。</p>
+<h3 id="30通过modelform判断要添加的数据是否重复">30.通过modelform判断要添加的数据是否重复</h3>
+<ul>
+<li><code>order_edit_form = orderEditForm().filter(id=你要查询的).exist()</code> 返回True/False<br>
+这个方法需要添加在modelform中的钩子方法中。</li>
+<li>排除自己以外的是否存在重复？(主要是在修改数据的时候）<br>
+通过<code>exclude</code>排除自己后判断：<code>order_edit_form = orderEditForm().exclude(id='自己的id' ).filter(id=你要查询的).exist()</code> 返回True/False</li>
+</ul>
+<p>总结 编辑和添加的不同</p>
+<h3 id="31查询根据某个字的一部分进行">31.查询（根据某个字的一部分进行）</h3>
+<ul>
+<li><code>filter()</code>还支持传入字典：</li>
+</ul>
+<pre><code class="language-python">order_edit_form = orderEditForm().filter(id=你要查询的,other=你要查询的)
+#等于
+query_dict = { 'id' : 要查询的, 'other' : 要查询的 }
+order_edit_form = orderEditForm().filter(**query_dict)
+ #需要注意传入字典的时候需要两个**
+</code></pre>
+<p>PS. 通常我们再变量前加一个星号(*)表示这个变量是元组/列表，加两个星号表示这个参数是字典</p>
+<h3 id="32问题记录modelform不能更新一行数据的部分字段">32.问题记录：modelform不能更新一行数据的部分字段</h3>
+<ul>
+<li><a href="https://www.qiniu.com/qfans/qnso-8216353#comments">解决方法</a><br>
+这里的解决方法很多 包括自定义钩子函数对post数据进行清晰、定义一个工厂函数处理每次不同的字段等，不过都太高端了，部分概念我还没有理解清楚😭</li>
+<li>因此我打算采取最简单的 -- 一个字段一个字段的去<code>update</code>😳。 或者采用dict的模式，处理不变的字段和更新后的字段 组合成为一个更新后的字典然后通过modelform保存..</li>
+<li>最后发现是我实例化出错了的问题....(真诚的眼瞎😭)</li>
+</ul>
+<pre><code class="language-python">    row_object = Orderform.objects.filter(id = id).first() #注意这里实例化的是一个form类 之前错误的原因是这里也写成了一个modelform类 这就导致下面instance的时候会报错 而且默认不更新的前端数据实际上是会传递回来的 作为表单的默认值
+    order_edit_form = orderEditForm(data=request.POST,instance=row_object) 
+    #这里实例化的是一个modelforms类
+</code></pre>
+<h3 id="33django的条件查询">33.django的条件查询</h3>
+<p>除了固定的等于（<code>=</code>）查询外，还可以通过给字段/属性添加下划线的方式规定范围查询</p>
+<ul>
+<li>数字方面：gt、gte、lt、lte：大于、大于等于、小于、小于等于。<br>
+<code>list = BookInfo.objects.filter(id__gt=3) </code> 代表id大于3的数据<br>
+PS. 不等于可以通过<code>exclude</code>过滤</li>
+<li>字符串方面：startswith、endswith：以指定值开头或结尾；contains：是否包含。<br>
+<code>list = BookInfo.objects.filter(btitle__endswith='部')</code> 查询是否数据中btitle字段以‘部’这个字结尾的一行数据。</li>
+<li>日期查询： year、month、day、week_day、hour、minute、second：对日期时间类型的属性进行运算。<br>
+<code>list = BookInfo.objects.filter(bpub_date__year=1980)</code> 查询1980年发表的图书<br>
+<code>list = BookInfo.objects.filter(bpub_date__gt=date(1990,1,1))</code>  查询1980年1月1日后发表的图书。</li>
+<li>还有很多查询： 例如比较同一行数据两个字段之间的关系（如阅读数量&gt;=评论数量）、与或非查询、聚合等... 具体参考<a href="https://www.jianshu.com/p/bde1ece240bc">reference</a>或者官网</li>
+</ul>
+<p>PS. 1. <code>filter</code>可以连续使用 ：<code>list=BookInfo.objects.filter(bread__gt=20).filter(id__lt=3)</code> 2. <code>filter</code>可以传入字典</p>
+<h3 id="34设置get默认值">34.设置get默认值</h3>
+<ul>
+<li><code>request.GET.get('page', '1')</code> 获取get请求，如果get没有附带page参数，那么默认是1.</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%AD%A6%E4%B9%A0%E8%A7%86%E9%A2%91"><strong>学习视频</strong></a>
+<ul>
+<li><a href="#1%E8%AF%B7%E6%B1%82%E5%92%8C%E5%93%8D%E5%BA%94">1.请求和响应</a></li>
+<li><a href="#2%E6%95%B0%E6%8D%AE%E5%BA%93%E6%93%8D%E4%BD%9C">2.数据库操作</a></li>
+<li><a href="#3%E8%AE%A9django%E5%B8%AE%E5%8A%A9%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E8%A1%A8">3.让django帮助创建数据库表</a></li>
+<li><a href="#4%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4">4.执行命令</a></li>
+<li><a href="#5%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F">5.需要注意</a></li>
+<li><a href="#6%E9%80%9A%E8%BF%87django%E5%90%91%E8%A1%A8%E4%B8%AD%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE">6.通过django向表中插入数据</a></li>
+<li><a href="#7django%E8%A1%A8%E5%8D%95%E5%A6%82%E6%9E%9C%E4%B8%8D%E5%86%99action-%E9%82%A3%E4%B9%88%E9%BB%98%E8%AE%A4%E6%8F%90%E4%BA%A4%E5%B0%B1%E6%98%AF%E5%90%91%E5%BD%93%E5%89%8D%E9%A1%B5%E9%9D%A2%E5%8F%91%E9%80%81%E4%B8%80%E4%B8%AApost%E8%AF%B7%E6%B1%82">7.django表单如果不写action 那么默认提交就是向当前页面发送一个post请求</a></li>
+<li><a href="#8django%E4%B8%AD%E7%9A%84url%E5%91%BD%E5%90%8D%E8%83%BD%E9%81%BF%E5%85%8D%E5%AF%B9url%E7%9A%84%E7%A1%AC%E7%BC%96%E7%A0%81">8.django中的url命名能避免对url的硬编码，</a></li>
+<li><a href="#9model%E6%B7%BB%E5%8A%A0%E7%BA%A6%E6%9D%9F-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E7%BA%A6%E6%9D%9F">9.model添加约束 (数据库的约束)</a></li>
+<li><a href="#10%E6%80%A7%E5%88%AB%E5%AD%98%E5%82%A8">10.性别存储</a></li>
+<li><a href="#11form%E5%92%8Cmodelform">11.Form和ModelForm</a></li>
+<li><a href="#12%E9%87%8D%E5%AE%9A%E5%90%91">12.重定向</a></li>
+<li><a href="#13%E5%89%8D%E7%AB%AFurl%E5%AE%9E%E7%8E%B0%E5%88%A0%E9%99%A4%E8%AF%B7%E6%B1%82">13.前端url实现删除请求</a></li>
+<li><a href="#14django%E7%9A%84%E6%A8%A1%E6%9D%BF%E8%AF%AD%E6%B3%95">14.django的模板语法</a></li>
+<li><a href="#15django%E6%AD%A3%E5%88%99%E5%8C%B9%E9%85%8Durl">15.django正则匹配url</a></li>
+<li><a href="#16%E5%9C%A8django%E7%9A%84%E6%A8%A1%E6%9D%BF%E4%B8%AD%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87objget_%E8%81%94%E8%A1%A8%E5%90%8D_display%E8%8E%B7%E5%8F%96%E5%88%B0%E5%92%8C%E5%90%8E%E7%AB%AFget_%E8%81%94%E8%A1%A8%E5%90%8D_display%E7%9A%84%E6%95%88%E6%9E%9C%E7%9B%B4%E6%8E%A5%E8%BF%94%E5%9B%9E%E5%AF%B9%E7%85%A7%E8%BF%87%E5%90%8E%E7%9A%84%E7%BB%93%E6%9E%9C%E8%80%8C%E4%B8%8D%E6%98%AF%E5%AF%B9%E5%BA%94%E7%9A%84%E5%85%B3%E8%81%94id">16.在django的模板中，可以通过<code>obj.get_联表名_display</code>获取到和后端<code>get_联表名_display()</code>的效果，直接返回对照过后的结果而不是对应的关联id。</a></li>
+<li><a href="#17django%E7%9A%84%E6%A8%A1%E6%9D%BF%E5%8F%AF%E4%BB%A5%E8%BF%9B%E8%A1%8C%E7%9A%84%E9%A2%9D%E5%A4%96%E6%93%8D%E4%BD%9C">17.django的模板可以进行的额外操作：</a></li>
+<li><a href="#18modelform%E7%9A%84%E5%AD%97%E6%AE%B5%E6%A0%A1%E9%AA%8C%E5%87%BD%E6%95%B0">18.modelform的字段校验函数</a></li>
+<li><a href="#19%E8%B0%83%E6%95%B4%E8%BF%94%E5%9B%9E%E7%9A%84%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF%E4%B8%BA%E6%B1%89%E8%AF%AD">19.调整返回的提示信息为汉语</a></li>
+<li><a href="#20modelform%E4%B8%ADinstance%E5%8F%82%E6%95%B0">20.modelform中<code>instance</code>参数</a></li>
+<li><a href="#21django%E6%9F%A5%E8%AF%A2%E6%8E%92%E5%BA%8F">21.django查询排序</a></li>
+<li><a href="#22%E7%BB%99%E5%8E%9F%E6%9C%89%E7%9A%84%E8%A1%A8%E4%B8%AD%E6%B7%BB%E5%8A%A0%E6%96%B0%E7%9A%84%E5%AD%97%E6%AE%B5%E4%BA%A7%E7%94%9F%E9%94%99%E8%AF%AFdjangocoreexceptionsvalidationerror-error">22.给原有的表中添加新的字段产生错误<code>&quot;django.core.exceptions.ValidationError&quot; error</code></a></li>
+<li><a href="#23django%E6%8A%A5%E9%94%99orderform-object-has-no-attribute-get">23.django报错<code>'orderForm' object has no attribute 'get'</code></a></li>
+<li><a href="#24%E5%85%B3%E9%97%AD%E6%B5%8F%E8%A7%88%E5%99%A8%E6%A0%A1%E9%AA%8C">24.关闭浏览器校验</a></li>
+<li><a href="#25%E5%85%B3%E4%BA%8Emodels%E4%B8%ADnull%E5%92%8Cblack%E5%AD%97%E6%AE%B5">25.关于models中null和black字段</a></li>
+<li><a href="#26modelforms%E4%BE%BF%E6%8D%B7%E5%86%99%E6%B3%95">26.modelforms便捷写法</a></li>
+<li><a href="#27%E5%90%8E%E7%AB%AF%E8%A1%A8%E5%8D%95%E6%AD%A3%E5%88%99%E6%A0%A1%E9%AA%8C">27.后端表单正则校验</a></li>
+<li><a href="#28%E9%92%A9%E5%AD%90%E6%96%B9%E6%B3%95%E8%BF%9B%E8%A1%8C%E5%AD%97%E6%AE%B5%E6%A0%A1%E9%AA%8C">28.钩子方法进行字段校验</a></li>
+<li><a href="#29%E8%A7%84%E5%AE%9Amodelform%E4%B8%AD%E4%B8%8D%E5%8F%AF%E7%BC%96%E8%BE%91%E7%9A%84%E9%83%A8%E5%88%86">29.规定modelform中不可编辑的部分</a></li>
+<li><a href="#30%E9%80%9A%E8%BF%87modelform%E5%88%A4%E6%96%AD%E8%A6%81%E6%B7%BB%E5%8A%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E6%98%AF%E5%90%A6%E9%87%8D%E5%A4%8D">30.通过modelform判断要添加的数据是否重复</a></li>
+<li><a href="#31%E6%9F%A5%E8%AF%A2%E6%A0%B9%E6%8D%AE%E6%9F%90%E4%B8%AA%E5%AD%97%E7%9A%84%E4%B8%80%E9%83%A8%E5%88%86%E8%BF%9B%E8%A1%8C">31.查询（根据某个字的一部分进行）</a></li>
+<li><a href="#32%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95modelform%E4%B8%8D%E8%83%BD%E6%9B%B4%E6%96%B0%E4%B8%80%E8%A1%8C%E6%95%B0%E6%8D%AE%E7%9A%84%E9%83%A8%E5%88%86%E5%AD%97%E6%AE%B5">32.问题记录：modelform不能更新一行数据的部分字段</a></li>
+<li><a href="#33django%E7%9A%84%E6%9D%A1%E4%BB%B6%E6%9F%A5%E8%AF%A2">33.django的条件查询</a></li>
+<li><a href="#34%E8%AE%BE%E7%BD%AEget%E9%BB%98%E8%AE%A4%E5%80%BC">34.设置get默认值</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/extra-details-of-python-for-long-term-part2/">
+              <h3 class="post-title">
+                Extra details of python - for long term - part.2
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

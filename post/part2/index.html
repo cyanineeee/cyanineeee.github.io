@@ -1,0 +1,529 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python网络编程 -- 建立一个http服务器+twisted模块--part.2 | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1688824813057">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python网络编程 -- 建立一个http服务器+twisted模块--part.2 | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="=&gt;
+HTTP基础响应
+
+http服务器
+
+# 1.首先需要socket进行协议、端口设置
+# 2. 然后因为性能原因 需要设置多进程响应处理客户端请求
+# 3. 设置处理客户端发送信息
+# 4. 返回响应的html以及http头信息..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1688824813057" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python网络编程 -- 建立一个http服务器+twisted模块--part.2
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-26
+              </span>
+              <span>
+                18 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="">=&gt;</h1>
+<p>HTTP基础响应</p>
+<ol>
+<li>http服务器</li>
+</ol>
+<pre><code class="language-python"># 1.首先需要socket进行协议、端口设置
+# 2. 然后因为性能原因 需要设置多进程响应处理客户端请求
+# 3. 设置处理客户端发送信息
+# 4. 返回响应的html以及http头信息
+import socket
+import multiprocessing
+class HttpServer:
+    def __init__(self,port):  #进行socket初始设置 绑定端口开启监听
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象
+        self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置
+        self.server_socket.bind(('0.0.0.0',port)) #绑定监听端口
+        self.server_socket.listen() #开启监听 在构造函数内开启监听代表每一个实例都是一个http服务器程序
+
+    def start(self): #接收服务端信息 进行处理
+        while True:
+            client_scoket, client_addr = self.server_socket.accept()
+            print(f'【新的客户端连接】客户端ip{client_addr[0]},访问端口{client_addr[1]}')
+            handle_socket = multiprocessing.Process(target=self.handle_response,args=(client_scoket,))#启动一个进程处理这个客户端请求
+            handle_socket.start()
+
+    def handle_response(self,client_socket): #处理客户端发送的请求信息
+        request_headers = client_socket.recv(1024)
+        print(f'【客户端清请求头信息】{request_headers}') #处理客户端请求头信息
+
+        #开始处理响应给客户端的信息
+        response_start_line = 'HTTP/1.1 200 OK\r\n' #本次相应成功
+        #手动写http响应头 之后会发送给客户端会被浏览器解析
+        response_header = 'Server:Cyanine Hrrp Server\r\nContent-Type:text/html\r\n'
+        #返回的html代码 也就是页面主题 最基本的开发就是需要在代码中硬嵌入html页面代码
+        response_body = &quot;&lt;html&gt;&quot;\
+                            &quot;&lt;head&gt;&quot;\
+                                &quot;&lt;meta charset=utf-8&gt;&quot;\
+                                &quot;&lt;title&gt;Cyanine Http Server Response&lt;/title&gt;&quot;\
+                            &quot;&lt;/head&gt;&quot;\
+                            &quot;&lt;body&gt;&quot;\
+                                &quot;&lt;h1&gt;&quot;\
+                                &quot;Cyanine's Http server response...&quot;\
+                                &quot;&lt;/h1&gt;&quot;\
+                            &quot;&lt;/body&gt;&quot;\
+                        &quot;&lt;/html&gt;&quot;
+        #要注意在响应头和响应body之间添加换行 否则浏览器不能解析出响应内容
+        response = response_start_line + response_header + '\r\n'+response_body
+        client_socket.send(bytes(response,'UTF-8')) #服务器响应
+        client_socket.close() #https是无状态协议 因此相应完成一次之后就会关闭连接
+
+def main():
+    #80端口大部分服务的默认端口 因此如果使用的话 就可以直接属于域名/主机地址访问服务
+    #如果不是的话 需要指定端口 :**
+    http_server = HttpServer(9090)
+    http_server.start()
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>一些代码更详细的讲解<br>
+<code>self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象</code><br>
+ocket(family,type[,protocol])函数中，family 指定应用程序使用的通信协议的协议族，对于TCP/IP协议族，该参数为AF_INET；type 是要创建套接字的类型，socket.SOCK_STREAM表示流式socket，使用TCP协议的时候选择此参数，SOCK_DGRAM数据报式socket，使用UDP协议的时候选择此参数；protocol 指明所要接收的协议类型，通常为0或者不填。<br>
+<code>self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置  level: 设置选项所在的协议层编号，有四个可用配置项，其中socket.SOL_SOCKET表示基本嵌套字接口....剩下的好复杂，看不太懂，暂且放下。看到的[参考](https://blog.csdn.net/c_base_jin/article/details/94353956) </code>client_socket.send(bytes(response,'UTF-8')) #服务器响应<br>
+使用<code>bytes</code>的原因是socket只能发送字节数据流，因此需要将response转换为bytes类型，再发送。</p>
+<h1 id="-2">=&gt;</h1>
+<p>http服务器建立相应目录<br>
+之前的http服务只能进行一次固定的响应，并且html代码出现在python代码中不方便修改，没有进行前后端分离，较为落后。因此我们可以建立一个目录，目录下有不同的HTML页面，根据请求的不同，相应响应目录下对应的html文件。<br>
+具体实现：</p>
+<pre><code class="language-python"># 添加相应目录 原因在于代码维护以及更加高效的响应
+# 需要注意 读取html或者其他文件都是以bytes的格式
+# os的注意点 os.getcwd() os.sep os.path.normpath()
+# 正则的写法 暂不做详细了解 
+
+import socket
+import os #os处理响应文件目录
+import re #正则匹配请求中的文件地址
+import multiprocessing
+HTML_ROOT_DIR = os.getcwd() + os.sep + &quot;template&quot;
+
+class HttpServer:
+    def __init__(self,port):  #进行socket初始设置 绑定端口开启监听
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象
+        self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置
+        self.server_socket.bind(('0.0.0.0',port)) #绑定监听端口
+        self.server_socket.listen() #开启监听 在构造函数内开启监听代表每一个实例都是一个http服务器程序
+
+    def start(self): #接收服务端信息 进行处理
+        while True:
+            client_scoket, client_addr = self.server_socket.accept()
+            print(f'【新的客户端连接】客户端ip{client_addr[0]},访问端口{client_addr[1]}')
+            handle_socket = multiprocessing.Process(target=self.handle_response,args=(client_scoket,))#启动一个进程处理这个客户端请求
+            handle_socket.start()
+    
+    #读取对应文件数据
+    def read_file(self,file_name):
+        file_path = os.path.normpath(HTML_ROOT_DIR + file_name)
+        print('【请求文件路径】'+ file_path)
+        f = open(file_path,'rb') #二进制读取
+        file_data = f.read()
+        f.close()
+        print('【请求文件路径】该文件请求结束！')
+        return file_data
+
+    #获取二进制文件
+    def get_binary_data(self,file_name):
+        response_body = self.read_file(file_name)
+        return response_body
+
+    #读取html文件 返回相应的信息
+    def get_html_file(self,file_name):
+        response_start_line = 'HTTP/1.1 200 OK\r\n' #本次相应成功
+        #手动写http响应头 之后会发送给客户端会被浏览器解析
+        response_header = 'Server:Cyanine Hrrp Server\r\nContent-Type:text/html\r\n'
+        response_body = self.read_file(file_name)
+        return response_start_line + response_header + '\r\n' + response_body.decode('utf-8')
+    def handle_response(self,client_socket): #处理客户端发送的请求信息
+        request_headers = client_socket.recv(1024)
+        print(f'【客户端清请求头信息】{request_headers}') #处理客户端请求头信息
+        file_name = re.match(r&quot;\w+ +(/[^ ]*)&quot;, request_headers.decode('utf-8').split('\r\n')[0]).group(1)
+        if file_name == &quot;/&quot;: #如果请求的是根目录 那么实际访问的是index.html页面
+            file_name = '/index.html'
+        if file_name.endswith(&quot;.html&quot;) or file_name.endswith(&quot;.htm&quot;):
+            client_socket.send(bytes(self.get_html_file(file_name),'utf-8'))
+        else:
+            response_start_line = 'HTTP/1.1 200 OK\r\n' #本次响应成功
+            response_header ='Server:Cyanine Hrrp Server\r\nContent-Type:image/x-icon\r\n'
+            client_socket.send((response_start_line + response_header + '\r\n').encode('utf-8'))
+            client_socket.send(self.get_binary_data(file_name))
+        client_socket.close() #https是无状态协议 因此相应完成一次之后就会关闭连接
+
+def main():
+    #80端口大部分服务的默认端口 因此如果使用的话 就可以直接属于域名/主机地址访问服务
+    #如果不是的话 需要指定端口 :**
+    http_server = HttpServer(70)
+    http_server.start()
+    
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>代码细节解析<br>
+一这是一个简单的http服务器相应目录，只是简单处理index.html、hello.html以及favicon.ico文件；二为了结构清晰，尽管获取<code>get_binary_data()</code>方法只是给<code>read_file</code>换了个名字，但是能够将功能更加清晰的分割开来；三不管什么响应，都要记得添加对应的http响应头；四响应头和响应内容和分开发送；五要注意手写响应头的时候各个部分之间的<code>\r\n</code>；<br>
+同时这里还遇到了一个难以理解的问题，如果是以80端口启动服务，那么就算favicon的请求没有响应头，浏览器也会正确解析出来并显示图标，但是如果换成其他的端口，那么就不能正常相应，必须要添加响应头。猜测可能是因为80端口是默认，而请求favicon也是默认的一个请求，因此在这个活动中，浏览器会自动解析把，但是非默认端口就不可以。<a href="https://blog.csdn.net/laocooon/article/details/130762587#comments_27306408">和一位相同问题的大佬的讨论以及他的代码</a>。这个问题怎么也找不到答案，因此暂且搁置吧😭。总是还是要记得在每一个响应前添加响应头。不过当然针对简单的，复杂的话有很多web框架会帮我们滴~~~</p>
+<h1 id="-3">=&gt;</h1>
+<p>动态请求处理<br>
+web有两个处理阶段：静态处理阶段、动态处理阶段。<br>
+之前的响应目录实际上是静态处理，而动态web是可以根据动态的判断决定最终返回的数据内容。<br>
+python动态处理实现：(只是简单的原理了解，不涉及复杂的动态相应框架)</p>
+<pre><code class="language-python"># 处理动态请求 
+import socket
+import os #os处理响应文件目录
+import re #正则匹配请求中的文件地址
+import multiprocessing
+HTML_ROOT_DIR = os.getcwd() + os.sep + &quot;template&quot;
+import sys 
+sys.path.append('packages')
+
+class HttpServer:
+    def __init__(self,port):  #进行socket初始设置 绑定端口开启监听
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象
+        self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置
+        self.server_socket.bind(('0.0.0.0',port)) #绑定监听端口
+        self.server_socket.listen() #开启监听 在构造函数内开启监听代表每一个实例都是一个http服务器程序
+
+    def start(self): #接收服务端信息 进行处理
+        while True:
+            client_scoket, client_addr = self.server_socket.accept()
+            print(f'【新的客户端连接】客户端ip{client_addr[0]},访问端口{client_addr[1]}')
+            handle_socket = multiprocessing.Process(target=self.handle_response,args=(client_scoket,))#启动一个进程处理这个客户端请求
+            handle_socket.start()
+
+    def handle_response(self,client_socket): #处理客户端发送的请求信息
+        request_headers = client_socket.recv(1024)
+        print(f'【客户端清请求头信息】{request_headers}') #处理客户端请求头信息
+        file_name = re.match(r&quot;\w+ +(/[^ ]*)&quot;, request_headers.decode('utf-8').split('\r\n')[0]).group(1)
+        if file_name.startswith('/packages'): #访问动态页面
+            #获取动态参数 
+            request_name = file_name[file_name.index('/',1)+1:]#访问路径
+            # print(&quot;访问路径：&quot;+request_name)
+            param_value = '' #请求参数
+            if request_name.__contains__('?') :#？是url中的参数分隔符号
+                request_value = request_name[request_name.index('?') + 1 :]
+                param_value = request_value.split('=')[1]
+                request_name = request_name[0:request_name.index('?')]
+                # print(request_name)
+            model_name = request_name.split('/')[0]
+            method_name = request_name.split('/')[1]
+            model = __import__(model_name)
+            method = getattr(model,method_name)
+            response_body = method(param_value)
+            print('【响应数据是】：'+response_body)
+
+            response_start_line = 'HTTP/1.1 200 OK\r\n' 
+            #手动写http响应头 之后会发送给客户端会被浏览器解析
+            response_header = 'Server:Cyanine Hrrp Server\r\nContent-Type:text/html\r\n'
+            response = response_start_line+response_header+'\r\n'+response_body
+            print(response)
+            client_socket.send(bytes(response,'UTF-8'))
+        client_socket.close()
+
+
+def main():
+    #80端口大部分服务的默认端口 因此如果使用的话 就可以直接属于域名/主机地址访问服务
+    #如果不是的话 需要指定端口 :**
+    http_server = HttpServer(80)
+    http_server.start()
+    
+if __name__ == '__main__':
+    #http://localhost/packages/echo/service?param=canshu
+    main()
+</code></pre>
+<p>同时还需要一个在同目录下的packages文件夹，文件路径如下</p>
+<pre><code>├─packages
+│  │  echo.py
+│  │  __init__.py
+│  │  
+│  └─__pycache__
+│          echo.cpython-310.pyc
+│          echo.cpython-311.pyc
+│          
+├─template
+│      favicon.ico
+│      hello.html
+│      index.html
+│        
+├─网络编程
+│      01-server.py
+│      02-client.py
+│      03-echo-server.py
+│      04-echo-client.py
+│      05-UDP-server.py
+│      06-UDP-client.py
+│      07-broadcast-client.py
+│      08-broadcast-server.py
+│      09-http-server.py
+│      10-http-lib-server.py
+│      11-dynamic-request.py #这个是本文件
+</code></pre>
+<p>其中的/packages/echo.py文件内容如下：</p>
+<pre><code class="language-python">def service(text):
+    if text:
+        response = f'&lt;head&gt;&lt;title&gt;Cyanine\'s Http Server&lt;/title&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;参数信息：{text}&lt;/h1&gt;&lt;/body&gt;'
+        return response
+    else:
+        return '&lt;h1&gt;没有参数信息&lt;/h1&gt;'
+</code></pre>
+<p>需要注意的：<br>
+一在<code>packages</code>文件夹下一定要有<code>__init.py__</code>文件，这样才能在<code>__import__</code>的时候正确识别到模块，同时也需要提前设定默认的模块路径（<code>sys.path.append(path/to/module)</code>）；二响应的时候除了需要确定响应头，在响应的html代码中需要规定编码方式，否则会出现乱码（<code>&lt;meta charset=utf-8&gt;</code>)；三动态处理我刚听起来高大上，但实际上操作一遍，感受就是对url的解析，加上一些程序处理参数，就是动态处理；四动态处理url需要用到很多对字符串的操作。<br>
+PS. 另外一个方便的小tips，在写项目结构的时候，命令行里使用<code>tree</code>会生成目录结构，<code>tree &gt; txtname.txt</code>会将目录输出到这个txt文件中，参数<code>/f</code>会显示所有的文件层级，不加参数只会显示到所有的目录层级。</p>
+<h1 id="-4">=&gt;</h1>
+<p>urllib3模块<br>
+用这个模块可以实现浏览器的模拟访问，是urllib的升级版，两者功能类似，只有细微差别。</p>
+<h1 id="-5">=&gt;</h1>
+<p>Twisted模块 (类似java中nio)<br>
+是python中专门实现异步处理的io概念，主要是提升服务端的数据处理能力。理解twisted的设计思想，那么需要对比传统的服务器程序开发。早期没有多核CPU概念，单线程处理的效率低下，多线程并发编程有可能产生死锁问题（不同进程以及线程之间的等待和唤醒机制）（因为都是一个一个进程去执行）。所以后来，如果不使用并发编程，就不会产生种种问题（资源切换、系统调度、同步与等待等），</p>
+<blockquote>
+<p>阻塞设计<br>
+服务端与客户端的recv<br>
+会浪费大量服务器资源 -&gt; 这就是阻塞IO</p>
+</blockquote>
+<p>多线程是不能解决阻塞IO的，因此最好的方法是非阻塞IO（分为同步非阻塞IO和异步非阻塞IO），因此实现下来就是在一个进程中不断地进行循环处理<br>
+-&gt; twisted是一个事件驱动型的网络引擎，最大的特点就是提供有一个事件循环处理，当外部事件发生时，使用回调机制来触发相应的操作处理，多个任务在一个线程中执行的时候，这种方式可以使程序尽可能地减少对其它线程的以来，也使得程序开发人员不再关注线程安全问题。<br>
+-&gt; twisted中的所有处理事件全部交给reactor进行统一管理。<br>
+-&gt; reactor 进行所有输出输出有关的事件注册。在整个程序的运行中，reactor循环会以单线程的形式持续运行，当需要执行回调处理的时候会停止循环，当回调操作执行完毕之后将继续采用循环的形式进行其他任务处理。</p>
+<h1 id="-6">=&gt;</h1>
+<p>使用twisted开发TCP程序<br>
+会使服务端的资源利用带来极大便利。</p>
+<ol>
+<li>服务端：</li>
+</ol>
+<pre><code class="language-python">import twisted
+import twisted.internet.protocol
+import twisted.internet.reactor
+
+SERVER_PORT = 8080
+
+class Server(twisted.internet.protocol.Protocol): #继承父类
+    def connectionMade(self): #复写服务端连接方法
+        print(f'客户端{self.transport.getPeer().host}连接成功...')
+        return super().connectionMade() 
+    def dataReceived(self, data: bytes): #复写服务端数据接收方法
+        print('【服务端收到数据】' + data.decode('utf-8')) #处理操作
+        self.transport.write(('【ECHO】' + data.decode('utf-8')).encode('UTF-8')) #进行回应 类比socket的send
+        return super().dataReceived(data)
+
+#注册reactor
+#reactor根据工厂获得相应事件回调处理类
+class DefaultServerFactory(twisted.internet.protocol.Factory):
+    protocol = Server
+
+def main():
+    #服务监听
+    twisted.internet.reactor.listenTCP(SERVER_PORT,DefaultServerFactory())
+    print('服务器启动完毕，等待客户端连接...')
+    twisted.internet.reactor.run()
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<ol start="2">
+<li>客户端</li>
+</ol>
+<pre><code class="language-python">import twisted
+import twisted.internet.protocol
+import twisted.internet.reactor
+
+SERVER_PORT = 8080
+SERVER_HOST = 'localhost'
+
+class Client(twisted.internet.protocol.Protocol):
+    def connectionMade(self):
+        print('服务器连接成功...')
+        self.send() #建立连接之后就发送数据
+        return super().connectionMade()
+    
+    def send(self): #自定义发送的方式
+        input_data = input('请输入发送的数据:')
+        if input_data:
+            self.transport.write(input_data.encode('utf-8'))
+        else:
+            self.transport.loseConnection() #如果没有数据发送就关闭连接
+    def dataReceived(self, data: bytes): #接收服务端的数据
+        print(data.decode('utf-8'))
+        self.send() #进行下一次数据发送
+        return super().dataReceived(data)
+    
+class DefaultClientfactory(twisted.internet.protocol.ClientFactory):
+    protocol = Client
+    #如果连接断开 就停止reactor的循环
+    clientConnectLost = clientCOnnectionFailed = lambda self, connector,reason : twisted.internet.reactor.stop()
+
+def main():
+    twisted.internet.reactor.connectTCP(SERVER_HOST,SERVER_PORT,DefaultClientfactory()) #服务监听
+    twisted.internet.reactor.run() #启动reactor循环
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>整个框架还是处于一个模糊状态，但是对twisted的事件轮询机制还是有了一点清楚的认知。<br>
+我的理解:</p>
+<blockquote>
+<p>将数据的处理和数据的接收发送、服务器的连接这两个部分剥离开。在reactor中如果接收到一个信息，那么就会调用到twisted循环中的某个处理程序，然后处理完成之后将数据返回给reactor进行发送，然后twisted事件就会继续循环。相当于将一个socket进程中的accept()阻塞和实际的处理剥离开，让处理程序不受到阻塞程序的影响，因此可以在一个进程中高效的处理多个客户端的连接，节省了服务器的资源。<br>
+（有点像两个圈，reactor一个圈，twisted一个圈，当遇到数据需要处理的时候两个圈就会连一条线，处理完之后就把线擦去）</p>
+</blockquote>
+<h1 id="-7">=&gt;</h1>
+<p>暂时先到这里，后面还有twisted的UDP客户端开发以及deferred的概念。 -- 2023-06-26</p>
+<p>deferred</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#">=&gt;</a></li>
+<li><a href="#-2">=&gt;</a></li>
+<li><a href="#-3">=&gt;</a></li>
+<li><a href="#-4">=&gt;</a></li>
+<li><a href="#-5">=&gt;</a></li>
+<li><a href="#-6">=&gt;</a></li>
+<li><a href="#-7">=&gt;</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/python-wang-luo-bian-cheng/">
+              <h3 class="post-title">
+                python网络编程 -- 建立一个http服务器+twisted模块--part.1
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

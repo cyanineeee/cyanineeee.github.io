@@ -1,0 +1,566 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>django学习 -- 前后端不分离的 -- part.2 | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1688824813057">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="django学习 -- 前后端不分离的 -- part.2 | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="35.时间选择插件
+download_link
+office_link
+usage
+
+使用极其简单：只需要选择dom然后绑定即可，在使用方法里可以设置各种参数
+
+$('#id_presettime').datetimepicker({
+  ..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1688824813057" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              django学习 -- 前后端不分离的 -- part.2
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-30
+              </span>
+              <span>
+                14 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="35时间选择插件">35.时间选择插件</h3>
+<p><a href="https://www.bootcss.com/p/bootstrap-datetimepicker/index.htm">download_link</a><br>
+<a href="https://bootstrap-datepicker.readthedocs.io/en/latest/options.html">office_link</a><br>
+<a href="https://blog.csdn.net/qq_28633249/article/details/77142352">usage</a></p>
+<ul>
+<li>使用极其简单：只需要选择dom然后绑定即可，在使用方法里可以设置各种参数</li>
+</ul>
+<pre><code class="language-js">$('#id_presettime').datetimepicker({
+   format: 'yyyy-mm-dd hh:ii'
+});   
+</code></pre>
+<h3 id="36modelfield定义成成表单的属性样式">36.modelfield定义成成表单的属性样式</h3>
+<pre><code class="language-python">class orderForm(ModelForm):
+    class Meta():
+        model = Orderform
+        fields = &quot;__all__&quot;
+
+    #方法一 原生的属性
+    widgets = {
+        #为html表单中name类型的input标签添加&quot;class=form-control&quot;
+        'name' : forms.TextInput(attrs = {&quot;class&quot; : &quot;form-control&quot;})
+        #为html表单中password类型的input标签添加&quot;class=form-control&quot;
+        'password' : formsPasswordInput( attrs = {&quot;class&quot; : &quot;form-control&quot;})
+        ...
+    }
+
+    #方法二 扩写父类函数的属性
+        def __init__(self,*arg,**kwargs):
+            super().__init__(*arg,**kwargs)
+            for name, field in self.fields.items():
+                # print(name,field) #这个是展示 self.fields.items()可以直接拿到定义在Meta中的fields字段
+                field.widget.attrs = {'class' : 'form-control'} #为生成的表单input赋予css属性 
+</code></pre>
+<ul>
+<li>扩充 这个属性可以继承 不过暂时对我没什么用处 因此pass过</li>
+</ul>
+<h3 id="37修改dajngo的modelform类的input的type类型为datetime-local">37.修改dajngo的modelform类的<code>input</code>的<code>type</code>类型为<code>datetime-local</code></h3>
+<ul>
+<li>第一种是通过前端js实现，一共三步：第一拿到原始的时间数据，第二选择input框然后修改type，第三讲原始的时间数据修改格式之后在赋予给input框：</li>
+</ul>
+<pre><code class="language-js">function changeDatetimeInput(id){
+    var time = $(`#${id}`).val().replaceAll('/','-');
+    $(`#${id}`).attr('type','datetime-local');
+    $(`#${id}`).val(time)
+}
+changeDatetimeInput('id_presettime');
+changeDatetimeInput('id_endtime');
+</code></pre>
+<p>需要注意的是，后端django传来的之间类型是<code>yyyy/mm/dd hh:ii</code>，但是html内置的时间选择input框的时间字符串格式要求是<code>yyyy-mm-ddThh:ii</code>，因此需要将原来的斜杠（/）替换成短横（-），中间·的<code>T</code>是一个时间字符表示，可以用大写字符T表示，但最终解析的时候空格也可以，<a href="https://blog.csdn.net/jim_LoveQ/article/details/107457771">具体参考</a></p>
+<ul>
+<li>第二种就是修改django的<code>DateTimeInput</code><br>
+这种看不懂原因，但是如果只是仅仅修改input_type的话是解析不了的，回答给出的原因是后端会因为输入合法判断和不通过，<a href="https://stackoverflow.com/questions/50214773/type-datetime-local-in-django-form">detail_link_and_solution</a></li>
+</ul>
+<pre><code class="language-python">from django import forms
+class DateTimeLocalInput(forms.DateTimeInput):
+    input_type = &quot;datetime-local&quot;
+
+class DateTimeLocalField(forms.DateTimeField):
+    # Set DATETIME_INPUT_FORMATS here because, if USE_L10N 
+    # is True, the locale-dictated format will be applied 
+    # instead of settings.DATETIME_INPUT_FORMATS.
+    # See also: 
+    # https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats
+    input_formats = [
+        &quot;%Y-%m-%dT%H:%M:%S&quot;, 
+        &quot;%Y-%m-%dT%H:%M:%S.%f&quot;, 
+        &quot;%Y-%m-%dT%H:%M&quot;
+    ]
+    widget = DateTimeLocalInput(format=&quot;%Y-%m-%dT%H:%M&quot;)
+</code></pre>
+<p>然后再自己的modelform中将想要修改input的typ类型为datetime-local的字段设置为<code>DateTimeLocalField</code>即可：</p>
+<pre><code class="language-python">#用法
+class orderEditForm(ModelForm):
+    presettime = DateTimeLocalField() #在这里将想要的字段设置即可
+    class Meta():
+        model = Orderform
+        fields = &quot;__all__&quot;
+</code></pre>
+<pre><code class="language-html">&lt;!-- {{field}}生成的具体样式  --&gt;
+&lt;input type=&quot;text&quot; name=&quot;endtime&quot; value=&quot;1899/12/31 00:00&quot; class=&quot;form-control&quot; id=&quot;id_endtime&quot;&gt;
+</code></pre>
+<h3 id="38通过validationerror来为钩子方法设置非法输入提示信息">38.通过validationError来为钩子方法设置非法输入提示信息</h3>
+<p><code>raise ValidationError</code></p>
+<h3 id="39密码加密-通过钩子方法定义">39.密码加密 通过钩子方法定义</h3>
+<ul>
+<li>钩子方法返回的就是储存到数据库中</li>
+<li>md5加密 加密需要“盐”，为了方便和效果 使用django在设置中生成的secret_key来当作“盐”</li>
+</ul>
+<pre><code class="language-python">from django.conf import settings
+import hashlib
+
+def md5(data_string):
+    obj = hashlib.md5(settings.SECRET_KEY.encode('utf-8'))
+    obj.update(data_string.encode('utf-8'))
+    return obj.hexdigest()
+</code></pre>
+<h3 id="40对于djanfo的orm如果搜索不到">40.对于djanfo的ORM，如果搜索不到</h3>
+<p>搜索不到就返回None，可以用来判断是否是合法请求</p>
+<h3 id="41对于表单验证">41.对于表单验证</h3>
+<p>所有验证通过的信息都储存在对应的<code>cleaned_data</code>中</p>
+<h3 id="42django报错">42.django报错</h3>
+<p><code>'Manager' object is not callable</code><br>
+原因是<code>objects</code>是一个属性而不是一个方法，写成<code>objects()</code>会报这个错</p>
+<h3 id="43用户登录">43.用户登录</h3>
+<ul>
+<li>cookies 和 session<br>
+无状态短链接<br>
+通过cookies给用户发放一个“凭证”， 保存在浏览器中的键值对，发送请求的时候自动携带<br>
+session django默认储存在mysql中</li>
+</ul>
+<p>业务过程：收到用户的提交 -&gt; 校验（在数据库比较） -&gt; 成功 生成随机字符串写入到用户浏览器的cookies以及数据库中（这里只需要调用<code>request.session()</code>方法即可 django会自动处理两个事件），并且会将传入的字符经过处理之后，以<code>{session_key:session_data}</code>键值对的形式保存在数据库中，其中session_key就是传递给浏览器的cookies，而session_data就是在下面代码中定义的字典（经过字符转换，需要使用的时候django会解码）</p>
+<pre><code class="language-python">        else: #登陆成功
+            request.session['info'] = { #写入session
+                'id':login_object.id,
+                'name' : login_object.name,
+            }
+</code></pre>
+<ul>
+<li>
+<p style="color:red;font-size:large;">PS. 特别需要注意的是，在后面的调用request.session中的属性的名字都是来自于此！</p>
+</li>
+</ul>
+<p>因此需要在用户访问的时候判断用户是否登录 -&gt; 已登录继续访问 未登录跳转回登陆页面：<br>
+用户请求-&gt; 拿到用户cookies并判断：</p>
+<pre><code class="language-python">#第一种方法 在每个请求前都加上对于cookies的判断
+    if not request.session.get('info'):
+        return redirect('/login/')
+</code></pre>
+<p>太low😎<br>
+应该使用django的中间件高效的处理</p>
+<h3 id="44django中间件">44.django中间件</h3>
+<p><a href="https://docs.djangoproject.com/zh-hans/4.1/topics/http/middleware/">官方文档</a></p>
+<ul>
+<li>对于django，每一个请求都需要经过很多中间件之后才能访问到视图函数；同样的，所有的视图函数返回值都需要经过很多中间件的处理才会返回给用户。</li>
+<li>django的中间件都是类，通过<code>process_request</code>方法对传入的请求进行处理，通过<code>process_response</code>对视图函数的return进行包装。如果某个请求不能通过一个中间件，那么就会直接返回给用户，而不会到达视图函数。</li>
+<li>中间件写好之后需要在setting.py文件中的MIDDLEWARE中注册（具体到类名），哪个在前面那个先执行。</li>
+<li>中间的<code>process_request</code>方法如果返回为None，那么继续向后执行；如果需要返回，那么返回的类型与视图函数的返回类似（例如render,redirect,HttpResponse等），并且不在向后执行。</li>
+<li>应用中间件：
+<ul>
+<li>1.注册中间件</li>
+<li>2.中间件中返回值</li>
+<li>3.通过中间件实现登录校验<br>
+代码实现</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python">#middleware.py文件
+from django.utils.deprecation import MiddlewareMixin
+from django.shortcuts import render,redirect
+from django.http import HttpResponse
+
+class SessionChectMiddleware(MiddlewareMixin):
+    def process_request(self,request):
+        #排除不需要登陆的页面
+        allow_url = ['/login/','/register/']
+        if request.path_info in allow_url:
+            return
+        #读取session
+        info = request.session.get('info')
+        if info:
+            return
+        else: 
+            return redirect('/login/')
+</code></pre>
+<pre><code class="language-python">#在setting.py文件中注册
+MIDDLEWARE = [
+    &quot;django.middleware.security.SecurityMiddleware&quot;,
+...... ,
+    &quot;cake.middleware.SessionChectMiddleware&quot;,
+]
+</code></pre>
+<p>PS. request.path_info可以获取到请求的url路径。</p>
+<h3 id="45注销操作-用户退出登录">45.注销操作 - 用户退出登录</h3>
+<p>也就是将浏览器的cookies和session删除<br>
+同样使用request.session中的方法即可</p>
+<h3 id="46通过session获取用户登录信息显示在导航栏">46.通过session获取用户登录信息显示在导航栏</h3>
+<p>每次视图函数的中传递的request中都包含session参数，因此可以直接在模板中调用<code>{{request.session.info.属性}}</code>来获取对应的信息（因为request是默认传递的），不用刻意通过别的模板参数来渲染。</p>
+<pre><code class="language-python">    &lt;button class=&quot;btn btn-secondary dropdown-toggle btn-sm&quot; type=&quot;button&quot; id=&quot;dropdownMenuButton2&quot; data-bs-toggle=&quot;dropdown&quot; aria-expanded=&quot;false&quot;&gt;
+                        {{ request.session.info.name}}
+&lt;/button&gt;
+</code></pre>
+<h3 id="47form和modelform">47.form和modelform</h3>
+<ul>
+<li>form可以自定义字段<br>
+modeform既可以自定义 还可以在数据库中拿取字段</li>
+<li>form没有save方法可以直接存入到数据库 但是modelform有</li>
+</ul>
+<h3 id="48图片验证码">48.图片验证码</h3>
+<p>-&gt; python中如何动态生成图片并写入值 (不做过多了解 仅仅当成黑盒使用)<br>
+<a href="https://www.cnblogs.com/crischou/p/7152974.html">参考文献</a></p>
+<ul>
+<li>需要pillow库</li>
+</ul>
+<pre><code class="language-python">import random
+from PIL import Image,ImageFont,ImageDraw,ImageFilter
+#需要注意！！ 这里的字体文件font_file路径组合是基于运行的根目录决定的 需要根据相对位置的不同进行调整！这里我将他放在根目录下面的static/文件夹内
+def check_code(width=120, height=30, char_length=5, font_file='./static/kumo.ttf', font_size=28):
+    # font = ImageFont.load_default() #使用默认字体
+    code = []
+    img = Image.new(mode='RGB', size=(width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img, mode='RGB')
+    def rndChar():
+        &quot;&quot;&quot;
+        生成随机字母   
+        :return:
+        &quot;&quot;&quot;
+        return chr(random.randint(65, 90))
+    def rndColor():
+        &quot;&quot;&quot;
+        生成随机颜色
+        :return:
+        &quot;&quot;&quot;
+        return (random.randint(0, 255), random.randint(10, 255), random.randint(64, 255))
+    # 写文字
+    font = ImageFont.truetype(font_file, font_size)
+    for i in range(char_length):
+        char = rndChar()
+        code.append(char)
+        h = random.randint(0, 4)
+        draw.text([i * width / char_length, h], char, font=font, fill=rndColor())
+    # 写干扰点
+    for i in range(40):
+        draw.point([random.randint(0, width), random.randint(0, height)], fill=rndColor())
+    # 写干扰圆圈
+    for i in range(40):
+        draw.point([random.randint(0, width), random.randint(0, height)], fill=rndColor())
+        x = random.randint(0, width)
+        y = random.randint(0, height)
+        draw.arc((x, y, x + 4, y + 4), 0, 90, fill=rndColor())
+    # 画干扰线
+    for i in range(5):
+        x1 = random.randint(0, width)
+        y1 = random.randint(0, height)
+        x2 = random.randint(0, width)
+        y2 = random.randint(0, height)
+
+        draw.line((x1, y1, x2, y2), fill=rndColor())
+
+    img = img.filter(ImageFilter.EDGE_ENHANCE_MORE)
+    return img,''.join(code)
+ 
+if __name__ == '__main__':
+    # 1. 直接打开
+    # img,code = check_code()
+    # img.show()
+ 
+    # 2. 写入文件
+    img,code = check_code()
+    with open('code.png','wb') as f:
+        img.save(f,format='png')
+ 
+    # 3. 写入内存(Python3)
+    # from io import BytesIO
+    # stream = BytesIO()
+    # img.save(stream, 'png')
+    # stream.getvalue()
+ 
+    # 4. 写入内存（Python2）
+    # import StringIO
+    # stream = StringIO.StringIO()
+    # img.save(stream, 'png')
+    # stream.getvalue()
+
+    pass
+</code></pre>
+<p style='color:red'>需要注意！！`check_code()`的字体文件`font_file`路径组合是基于运行的根目录决定的 需要根据相对位置的不同进行调整！这里我将他放在根目录下面的`static/`文件夹内</p>
++ 然后就是部署到djang中：主要是将前端请求图片的url替换为动态的，然后生成验证码的视图函数返回对应的验证码图片。
+```python
+from .function.checkcode import check_code #这个就是刚才的生成验证码图片的函数
+from io import BytesIO #将图片储存到内存中需要用的库
+<p>def image_code(request):<br>
+'''生成验证码'''<br>
+img,str = check_code()<br>
+print(str)<br>
+stream = BytesIO()<br>
+img.save(stream, 'png')</p>
+<pre><code>return HttpResponse(stream.getvalue()) #从内存中读取到图片然后以http response的形式传回给前端 前端的img标签解析之后就是一个图片
+</code></pre>
+<pre><code>```html
+&lt;img src=&quot;/image/code/&quot;&gt; 
+&lt;!-- 只要调用对应的url就可以 --&gt;
+
+</code></pre>
+<p>PS. 需要注意的是：同一个文件中不要出现名字相同的函数，不管是引用的还是本文件的，会导致调用出错</p>
+<h3 id="49如何验证验证码呢">49.如何验证验证码呢？</h3>
+<p>通过session！ - 这样每个用户在登陆的时候对于验证码的验证就不会受到干扰，并且重复刷新也会更新session中对应的验证码。<br>
+这里有很多需要注意的点！</p>
+<ul>
+<li><code>add_errors()</code>可以向forms中指定字段添加错误提示信息，然后能在前端的<code>{{fields.属性字段.errors.0}}</code>中取到。</li>
+<li>由于验证码的字段是没有在用户model/数据库表中存在的，因此如果直接传入<code>request.POST</code>作为data参数会报错。因此应该将验证码字段单独剔除。</li>
+<li>验证码验证需要调用之前创建验证码时存入session的字段，将两个字段相比较判断是否正确。</li>
+<li>登录成功之后需要重新设置session的过期时间 ，因为为了验证码的登录时效，在生成验证码的时候会设置保存验证码对比字段的session信息时效比较短，因此登录成功之后需要重新设置。<br>
+最终的登录逻辑</li>
+</ul>
+<pre><code class="language-python">from .models import UserInfo #model中的类 是最原本的用户信息类 包括账户名和密码以及自动生成的id
+from io import BytesIO #生成图片储存在内存
+from .encrypt import md5 #加密
+
+class loginForm(forms.Form):
+    name = forms.CharField(label='用户名',widget=forms.TextInput(
+        attrs = {
+            'class' :&quot;my-input-item&quot;
+        }
+    ))
+    password = forms.CharField(label='密码',widget=forms.PasswordInput(
+        attrs = {
+            'class' :&quot;my-input-item&quot;
+        }
+    ))
+    code = forms.CharField(label='验证码',widget=forms.TextInput(
+        attrs={
+            'class':&quot;my-input-item&quot; ,
+            'style':&quot;margin-top:0;&quot; ,
+            'placeholder':&quot;验证码&quot;
+        }
+    ),required=True)
+
+    def cleaned_password(self):
+        return md5(self.changed_data.get('password')) #md5加密
+
+#登录页面 
+def login(request):
+    if request.method == 'GET':
+        form = loginForm()
+        return render(request,'login.html',{
+            'form':form
+        })
+
+    login_form = loginForm(data=request.POST)
+    if login_form.is_valid():
+        user_input_code = login_form.cleaned_data.pop('code') 
+        #验证码的校验
+        code = request.session.get('image_code','') #这个是在生成验证码的时候存入session中的，如果过时或者获取不到默认为空
+        if code.upper() != user_input_code.upper(): #不考虑大小写 
+            #如果验证码不相等
+            login_form.add_error('code','验证码错误')
+            return render(request,'login.html',{
+                'form' : login_form,
+            })
+
+        login_object = UserInfo.objects.filter(**login_form.cleaned_data).first() #校验用户密码
+        if not login_object:
+            login_form.add_error('name','用户名或密码错误')
+            return render(request,'login.html',{
+                'form' : login_form,
+            })
+        else: #登陆成功
+            request.session['info'] = { #写入session
+                'id':login_object.id,
+                'name' : login_object.name,
+            }
+            request.session.set_expiry(60 * 60 * 24 * 7) #再重新设置session 保存7天
+            return redirect('/login/manage/')
+    else: #表单验证未通过
+        return render(request,'login.html',{
+                'form' : login_form,
+            }) 
+
+#生成验证码
+def image_code(request):
+    '''生成验证码'''
+    img,str = check_code()
+    request.session['image_code'] = str
+    request.session.set_expiry(60) #设置验证码session 60s过时
+    stream = BytesIO()
+    img.save(stream, 'png')
+    return HttpResponse(stream.getvalue())
+</code></pre>
+<p>PS. UserInfo是在model.py文件中的ORM类，对应着储存登录用户帐号密码的数据库表。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#35%E6%97%B6%E9%97%B4%E9%80%89%E6%8B%A9%E6%8F%92%E4%BB%B6">35.时间选择插件</a></li>
+<li><a href="#36modelfield%E5%AE%9A%E4%B9%89%E6%88%90%E6%88%90%E8%A1%A8%E5%8D%95%E7%9A%84%E5%B1%9E%E6%80%A7%E6%A0%B7%E5%BC%8F">36.modelfield定义成成表单的属性样式</a></li>
+<li><a href="#37%E4%BF%AE%E6%94%B9dajngo%E7%9A%84modelform%E7%B1%BB%E7%9A%84input%E7%9A%84type%E7%B1%BB%E5%9E%8B%E4%B8%BAdatetime-local">37.修改dajngo的modelform类的<code>input</code>的<code>type</code>类型为<code>datetime-local</code></a></li>
+<li><a href="#38%E9%80%9A%E8%BF%87validationerror%E6%9D%A5%E4%B8%BA%E9%92%A9%E5%AD%90%E6%96%B9%E6%B3%95%E8%AE%BE%E7%BD%AE%E9%9D%9E%E6%B3%95%E8%BE%93%E5%85%A5%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF">38.通过validationError来为钩子方法设置非法输入提示信息</a></li>
+<li><a href="#39%E5%AF%86%E7%A0%81%E5%8A%A0%E5%AF%86-%E9%80%9A%E8%BF%87%E9%92%A9%E5%AD%90%E6%96%B9%E6%B3%95%E5%AE%9A%E4%B9%89">39.密码加密 通过钩子方法定义</a></li>
+<li><a href="#40%E5%AF%B9%E4%BA%8Edjanfo%E7%9A%84orm%E5%A6%82%E6%9E%9C%E6%90%9C%E7%B4%A2%E4%B8%8D%E5%88%B0">40.对于djanfo的ORM，如果搜索不到</a></li>
+<li><a href="#41%E5%AF%B9%E4%BA%8E%E8%A1%A8%E5%8D%95%E9%AA%8C%E8%AF%81">41.对于表单验证</a></li>
+<li><a href="#42django%E6%8A%A5%E9%94%99">42.django报错</a></li>
+<li><a href="#43%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95">43.用户登录</a></li>
+<li><a href="#44django%E4%B8%AD%E9%97%B4%E4%BB%B6">44.django中间件</a></li>
+<li><a href="#45%E6%B3%A8%E9%94%80%E6%93%8D%E4%BD%9C-%E7%94%A8%E6%88%B7%E9%80%80%E5%87%BA%E7%99%BB%E5%BD%95">45.注销操作 - 用户退出登录</a></li>
+<li><a href="#46%E9%80%9A%E8%BF%87session%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E4%BF%A1%E6%81%AF%E6%98%BE%E7%A4%BA%E5%9C%A8%E5%AF%BC%E8%88%AA%E6%A0%8F">46.通过session获取用户登录信息显示在导航栏</a></li>
+<li><a href="#47form%E5%92%8Cmodelform">47.form和modelform</a></li>
+<li><a href="#48%E5%9B%BE%E7%89%87%E9%AA%8C%E8%AF%81%E7%A0%81">48.图片验证码</a></li>
+<li><a href="#49%E5%A6%82%E4%BD%95%E9%AA%8C%E8%AF%81%E9%AA%8C%E8%AF%81%E7%A0%81%E5%91%A2">49.如何验证验证码呢？</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/mysql-null-he-kong-de-qu-bie/">
+              <h3 class="post-title">
+                mysql -- null和空的区别
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
