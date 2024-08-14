@@ -1,0 +1,249 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>c/c++ 结构体嵌套 | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="c/c++ 结构体嵌套 | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="在写图的邻接表实现的时候，发现这个数据结构的实现实在是有点复杂，看得头晕，最主要还是因为有很多的结构体嵌套，并且在看的时候没有感觉出来，但实际上实现操作的时候，多层的嵌套还是有一点让我迷糊的。
+part.1
+最开始遇到的就是嵌套结构体的声明..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              c/c++ 结构体嵌套
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-02
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>在写图的邻接表实现的时候，发现这个数据结构的实现实在是有点复杂，看得头晕，最主要还是因为有很多的结构体嵌套，并且在看的时候没有感觉出来，但实际上实现操作的时候，多层的嵌套还是有一点让我迷糊的。</p>
+<h2 id="part1">part.1</h2>
+<p>最开始遇到的就是嵌套结构体的声明，在我写初始化函数的时候就想到，如果只是声明分配最外层结构体的指针，那么内部的结构体是否正确的被创建属于它的内存地址？</p>
+<pre><code class="language-c++">#include&lt;iostream&gt;
+typedef struct aaa{
+    int a, b;
+}*apointer;
+typedef struct bbb{
+    apointer a;
+    int c,d;
+}*bpointer,b;
+int main(){
+    using namespace std;
+    bpointer btest;
+    btest = new b;
+    btest -&gt; c = 1;
+    cout&lt;&lt;(btest-&gt;c);
+    cout&lt;&lt;endl;
+    
+    btest -&gt; a -&gt; a = 3;
+    cout&lt;&lt;(btest -&gt; a -&gt; a);
+}
+</code></pre>
+<pre><code>//输出
+1
+3
+</code></pre>
+<p>输出结果一如我所料，这一步就说明，如果结构体嵌套的是另一个结构体指针，那么外部结构体创建内存的时候，内部的也就被包含进去了。</p>
+<h2 id="part2">part.2</h2>
+<p>但如果内部嵌套的是一个结构体声明而不是指针呢？<br>
+将上面的代码微调，将apointer类型定义为结构体而不是结构体指针，结果如下：</p>
+<pre><code class="language-c++">#include&lt;iostream&gt;
+typedef struct aaa{
+    int a, b;
+}apointer;
+typedef struct bbb{
+    apointer a;
+    int c,d;
+}*bpointer,b;
+
+int main(){
+    using namespace std;
+    bpointer btest;
+    btest = new b;
+    btest -&gt; c = 1;
+    cout&lt;&lt;(btest-&gt;c);
+    cout&lt;&lt;endl;
+
+    //1.     
+    // btest -&gt; a -&gt; a = 3;
+    // cout&lt;&lt;(btest -&gt; a -&gt; a);
+
+    //2. 
+    //btest -&gt; a = new apointer;
+
+    //3. 
+    (btest -&gt; a). a = 3;
+    cout&lt;&lt;((btest -&gt; a). a);
+}
+</code></pre>
+<pre><code>//输出
+1
+3
+</code></pre>
+<p>1会报错<code>error: base operand of '-&gt;' has non-pointer type 'apointer' {aka 'aaa'}</code>，这是因为btest结构体中的a并不是一个指向结构体的指针，所以使用箭头<code>-&gt;</code>访问成员会产生错误，因此修改使用点<code>.</code>来访问，那么就没有问题（第三种情况）；第二钟情况会报错<code>error: base operand of '-&gt;' has non-pointer type 'apointer' {aka 'aaa'}</code>，同样是因为btest的a不是指针，因此new会产生类型不匹配的错误。</p>
+<h2 id="part3">part.3</h2>
+<p>结论：结构体内的结构体，无论是指针还是结构体声明，都会在外部的结构体声明并创建对应内存这一过程中包含在内，因此没有必要再在结构体内new/malloc申请内存。<br>
+不过要注意的是，根据结构体内的结构体的引用方式的不同，访问的方式也需要更改成为对应的合法方式：如果是指针，那么使用箭头访问；如果是声明，那么使用点操作符进行访问。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#part1">part.1</a></li>
+<li><a href="#part2">part.2</a></li>
+<li><a href="#part3">part.3</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/cczhi-zhen/">
+              <h3 class="post-title">
+                c/c++指针
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

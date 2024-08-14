@@ -1,0 +1,364 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Upload files by Django(Part.1--without Models, Forms, ModelForm) | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Upload files by Django(Part.1--without Models, Forms, ModelForm) | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Django上传文件(Part.1)
+这几天一直因为这个问题捣鼓了半天，各种问题都出来了。因为太多了而且最后也解决的，于是就只写一个最后总结出来的方法吧。而且因为问题太多，就把写的时候能想到的遇到的问题顺便就列出来。
+只演示上传文件这一单一..." />
+    <meta name="keywords" content="Django,python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Upload files by Django(Part.1--without Models, Forms, ModelForm)
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-05
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="http://localhost:4000/tag/M8-hjmU6C/" class="post-tag">
+                  # Django
+                </a>
+              
+                <a href="http://localhost:4000/tag/axGgidGI4/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="django上传文件part1">Django上传文件(Part.1)</h1>
+<p>这几天一直因为这个问题捣鼓了半天，各种问题都出来了。因为太多了而且最后也解决的，于是就只写一个最后总结出来的方法吧。而且因为问题太多，就把写的时候能想到的遇到的问题顺便就列出来。</p>
+<p>只演示上传文件这一单一功能，所以就新建一个项目，一边做一边记录下来。</p>
+<p>Ps.在windows系统下</p>
+<h3 id="不使用models和forms进行上传自定义上传文件图片">不使用models和forms进行上传（自定义上传文件/图片）</h3>
+<p>需求：最终创建两个页面，一个是上传主页面，一个是上传结果页面，结果页面分为上传成功和上传失败，两个结果页面都可以再次继续上传。上传的文件保存在与manage.py存在目录下的media/upload文件夹内。</p>
+<ol>
+<li>新建项目temptation,并新建app。在有django环境下的windows命令窗口中输入<br>
+<code>django-admin startproject temptation</code><br>
+<code>python manage.py startapp upload</code><br>
+生成的项目结构：</li>
+</ol>
+<blockquote>
+<pre><code>D:temptation
+│  manage.py
+│
+├─temptation│  │  asgi.py
+│  │  settings.py
+│  │  urls.py
+│  │  wsgi.py
+│  │  __init__.py
+│  │
+│  └─__pycache__
+│          settings.cpython-39.pyc
+│          __init__.cpython-39.pyc
+│
+└─upload
+   │  admin.py
+   │  apps.py
+   │  models.py
+   │  tests.py
+   │  views.py
+   │  __init__.py
+   │
+   └─migrations
+           __init__.py
+</code></pre>
+</blockquote>
+<ol start="2">
+<li>然后在temptation/settings.py中</li>
+</ol>
+<blockquote>
+<pre><code>INSTALLED_APPS = [
+   &quot;django.contrib.admin&quot;,
+		......
+	 'upload',//添加
+</code></pre>
+</blockquote>
+<p>Ps. 此时不对TEMPALTES中的DIRS进行配置，这样在之后配置html文件时就可以直接在upload下创建templates文件夹，然后直接将html文件放入。因为不对路径进行配置django会先寻找manage.py所在的文件夹中是否有templates文件夹，然后再在每个app下寻找templates文件夹，直到找到为止。<br>
+3. temptation/urls.py中:</p>
+<blockquote>
+<pre><code>from django.contrib import admin
+from django.urls import path,include//添加
+
+urlpatterns = [
+  path(&quot;admin/&quot;, admin.site.urls),
+   path(&quot;upload/&quot;, include('upload.urls')),//添加
+]
+</code></pre>
+</blockquote>
+<ol start="4">
+<li>在upload文件中创建urls.py文件，并配置：</li>
+</ol>
+<blockquote>
+<pre><code>from django.urls import path
+from . import views
+
+urlpatterns = [
+   path('index/',views.index,name='index'),
+   path('result/',views.result,name='result')
+]
+</code></pre>
+</blockquote>
+<ol start="5">
+<li>填写视图方法</li>
+</ol>
+<blockquote>
+<pre><code>from django.shortcuts import render
+def index(request):    //配置基础页面 
+   return render(request,'index.html')
+
+def result(request):
+   if request.method == &quot;POST&quot;: 
+       file = request.FILES['file']
+       filename = file.name
+       filepath = &quot;media/upload/&quot; + filename  //创建文件保存路径，是一个相对路径，相对于manage.py所在的文件夹
+       with open(filepath,'wb+') as f:  //写入文件
+           for chunk in file.chunks():  //分块写入文件，避免文件太大占满内存
+               f.write(chunk)
+           f.close()
+       return render(request,'result.html',{'result':'上传文件成功！'})
+   else:
+       return render(request,'result.html',{&quot;result&quot;:'上传文件失败！'})
+</code></pre>
+</blockquote>
+<ol start="6">
+<li>创建templates文件夹，并创建index.html和result.html页面<br>
+index.html</li>
+</ol>
+<blockquote>
+<pre><code>&lt;form name=&quot;show&quot; action=&quot;{% url 'result'%}&quot; method=&quot;POST&quot; enctype =&quot;multipart/form-data&quot;&gt;   /*创建form表单*/
+/*action表示表单上传至result.html页面，如果action为空那么不会有页面转跳，文件也上传失败。*/
+   {% csrf_token %}   /*django内置的上传用户审查，目前只需要记住上传文件的时候要加上*/
+   &lt;label for=&quot;fileupload&quot; &gt;请选择要上传的文件&lt;/label&gt;  /*for属性表示将label标签和id为fileupload的input标签关联*/
+   &lt;input type=&quot;file&quot; name=&quot;file&quot; id=&quot;fileupload&quot;&gt;
+   &lt;input type=&quot;submit&quot; value=&quot;上传&quot;&gt;
+&lt;/form&gt;
+{% block result%}  /*django的继承模板，用于做出类似于不刷新页面返回结果的效果*/
+{%endblock%}
+</code></pre>
+</blockquote>
+<p>result.html</p>
+<blockquote>
+<pre><code>{% extends 'index.html' %}   /*继承index.html模板*/
+
+{% block result%}
+{{result}}   /*显示上传结果*/
+{%endblock%}
+</code></pre>
+</blockquote>
+<ol start="7">
+<li>到此结束，列举一下最后的项目结构</li>
+</ol>
+<blockquote>
+<pre><code>D:temptation
+│  db.sqlite3
+│  manage.py
+│
+├─media
+│  └─upload
+│          img401.png
+│          img402.png
+│
+├─temptation
+│  │  asgi.py
+│  │  settings.py
+│  │  urls.py
+│  │  wsgi.py
+│  │  __init__.py
+│  │
+│  └─__pycache__
+│          settings.cpython-39.pyc
+│          urls.cpython-39.pyc
+│          wsgi.cpython-39.pyc
+│          __init__.cpython-39.pyc
+│
+└─upload
+   │  admin.py
+   │  apps.py
+   │  models.py
+   │  tests.py
+   │  urls.py
+   │  views.py
+   │  __init__.py
+   │
+   ├─migrations
+   │  │  __init__.py
+   │  │
+   │  └─__pycache__
+   │          __init__.cpython-39.pyc
+   │
+   ├─templates
+   │      index.html
+   │      result.html
+   │
+   └─__pycache__
+           admin.cpython-39.pyc
+           apps.cpython-39.pyc
+           models.cpython-39.pyc
+           urls.cpython-39.pyc
+           views.cpython-39.pyc
+           __init__.cpython-39.pyc
+</code></pre>
+</blockquote>
+<p>评价：这种方法最简单，不需要很多其他的配置，文件路径和名字也都可以自定义（比如换成上传时间）。但是缺少对上传文件格式的判断、对表单传来数据的审查、没有存储到数据库不方便管理等。<br>
+Ps. 这个项目完全可以不用创建数据库（也就是使用<code>python manage.py makemigrations</code>和<code>python manage.py migrate</code>），但是强迫症忍不了红色的提示😳</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#django%E4%B8%8A%E4%BC%A0%E6%96%87%E4%BB%B6part1">Django上传文件(Part.1)</a><br>
+*
+<ul>
+<li><a href="#%E4%B8%8D%E4%BD%BF%E7%94%A8models%E5%92%8Cforms%E8%BF%9B%E8%A1%8C%E4%B8%8A%E4%BC%A0%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B8%8A%E4%BC%A0%E6%96%87%E4%BB%B6%E5%9B%BE%E7%89%87">不使用models和forms进行上传（自定义上传文件/图片）</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/the-import-system-of-python/">
+              <h3 class="post-title">
+                The import system of python 
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1881 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>http://localhost:4000</id>
+    <title>cyanine</title>
+    <updated>2024-08-14T10:47:05.037Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="http://localhost:4000"/>
+    <link rel="self" href="http://localhost:4000/atom.xml"/>
+    <subtitle>my personal blog</subtitle>
+    <logo>http://localhost:4000/images/avatar.png</logo>
+    <icon>http://localhost:4000/favicon.ico</icon>
+    <rights>All rights reserved 2024, cyanine</rights>
+    <entry>
+        <title type="html"><![CDATA[uwsgi - django部署]]></title>
+        <id>http://localhost:4000/post/uwsgi-django-bu-shu/</id>
+        <link href="http://localhost:4000/post/uwsgi-django-bu-shu/">
+        </link>
+        <updated>2023-07-04T11:18:13.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="以一个最基础的初始django-项目为例不涉及数据库">以一个最基础的初始django 项目为例（不涉及数据库）</h2>
+<ol>
+<li>将django项目的环境打包成requirements.txt</li>
+<li>购买一个服务器</li>
+<li>将服务器安全组设置 设置入站规则全开</li>
+<li>配置python环境
+<ul>
+<li>本人使用的是ubuntu 20.04 自带python 3.8</li>
+<li>首先安装pip - 注：如果<code>E: Package 'python3.10-venv' has no installation candidate</code>说明你应该更新一下系统的可安装软件列表<code>apt-get update</code></li>
+<li>然后安装virtualenv</li>
+<li>然后cd到想要的目录下 创建虚拟环境</li>
+<li>cd到刚创建的虚拟环境目录下的bin文件夹内 source activate启动环境</li>
+</ul>
+</li>
+<li>配置项目环境
+<ul>
+<li>cd到项目根目录 执行pip install -r requirements.txt （一定要在上一步启动虚拟环境之后在进行环境配置）</li>
+<li>运行结束即可</li>
+</ul>
+</li>
+<li>安装uwsgi
+<ul>
+<li>pip install uwsgi即可</li>
+</ul>
+</li>
+<li>配置uwsgi.ini文件 - 在项目根目录中的同名目录下（就是个默认wsgi.py文件同一个文件夹下）</li>
+</ol>
+<pre><code class="language-ini">[uwsgi]
+http=0.0.0.0:8000 #设置为0.0.0.0表示外网可以访问 127.0.0.1表示本机访问
+chdir=/my/mysite  #项目根目录
+wsgi-file=mysite/wsgi.py   #项目根目录里面的同名文件内的wsgi.py文件
+process=2 #启动进程数 跟服务器cpu有关
+threads=2 #线程数 
+pidfile=uwsgi.pid  #储存进程的pid 以便于后面停止运行
+daemonize=uwsgi.log #日志文件
+master=true  #主进程启动
+</code></pre>
+<ol start="8">
+<li>然后cd进入到uwsgi.ini同级内
+<ul>
+<li>执行uwsgi --ini uwsgi.ini 启动</li>
+<li>此时就能通过公网ip+端口访问到djano服务了</li>
+</ul>
+</li>
+<li>停止服务
+<ul>
+<li>uwsgi --stop uwsgi.pid进入到uwsgi.ini同级文件夹运行即可<br>
+PS. 使用命令 ps aux|grep 'uwsgi'可以查看服务是否启动，出现如下表示正常：</li>
+</ul>
+</li>
+</ol>
+<pre><code>root       84204  1.0  3.8  47520 36724 ?        S    11:07   0:00 uwsgi --ini uwsgi.ini
+root       84206  0.0  3.0 121252 29816 ?        Sl   11:07   0:00 uwsgi --ini uwsgi.ini
+root       84207  0.0  2.7  47520 26280 ?        S    11:07   0:00 uwsgi --ini uwsgi.ini
+root       84250  0.0  0.0   6432   720 pts/0    S+   11:08   0:00 grep --color=auto uwsgi
+</code></pre>
+<h3 id="10-彻底关闭uwsgi进程">10. 彻底关闭uwsgi进程</h3>
+<p>如果没有设置停止的pid或者启动失败导致pid生成失败，这样就会导致有uwgsi进程挂在后台，因此需要彻底关闭：<code>pkill -f uwsgi -9</code></p>
+<p>PS.</p>
+<ul>
+<li>如果uwsgi日志报错：<code>uwsgi invalid request block size: 4937 (max 4096)...skip</code><br>
+代表请求过大（超过默认4k）因此跳过<br>
+因此只要将请求接收的值方法即可：在uwsgi.ini文件添加<code>buffer-size = 65536</code> 即可。</li>
+<li>这样部署之后，网站是请求不到静态文件的（css,js,图片等）所以需要再搭配nginx进行静态文件请求的处理。</li>
+</ul>
+<h2 id="uwsgi常见报错">uwsgi常见报错</h2>
+<ul>
+<li>
+<p>1.启动失败： 端口被占用<br>
+解决方法： 更换端口/停止占用端口的进程<br>
+<code>sudo lsof -i:端口号</code> - 查看端口  <code>kill -9 端口号</code> - 停止端口进程</p>
+</li>
+<li>
+<p>2.停止失败 stop无法关闭uwsgi<br>
+原因： 重复启动uwsgi导致uwsgi.pid中进程号失效<br>
+解决方法 ： ps 出uwsgi进程，手动kill</p>
+</li>
+<li>
+<ol start="3">
+<li>启动失败 找不到配置文件<br>
+大概率uwsgi.ini中的chdir和wsgi两个参数的地址配置错误<br>
+解决方法：修复即可，注意chdir是项目绝对路径，wsgi是<code>wsgi.py</code>文件的相对于项目根目录的路径</li>
+</ol>
+</li>
+<li>
+<p>安装uwsgi报错<code>ERROR: Failed building wheel for uwsgi</code><br>
+搜索解决方法：更新pip即可 -  更新系统依赖 - 安装psycopg2-binary -<br>
+都没有用<br>
+最后：<code>apt-get install build-essential python3-dev</code>然后pip即可<br>
+<a href="https://stackoverflow.com/questions/44037637/error-installing-uwsgi-in-virtualenv">stackoverflow</a></p>
+</li>
+<li>
+<ol start="4">
+<li>修改项目后再使用uwsgi启动报错</li>
+</ol>
+</li>
+</ul>
+<pre><code class="language-python">    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: The app module &lt;module 'cyanine' (namespace)&gt; has multiple filesystem locations (['/my/imsys/./cyanine', '/my/imsys/cyanine']); you must configure this app with an AppConfig subclass with a 'path' class attribute.
+</code></pre>
+<p>原因：没有正确设置app，因为想要添加一个展示页面作为项目的index，所以就直接将这个html文件以及附带的静态文件一股脑地放在一个文件夹里面然后添加到项目中，还在setting中注册了app名字，但是实际上这个app里面缺少对应的配置文件，这就开发模式下能够凭借文件路径运行正确，但生产模式部署的时候就导致uwgis运行的时候找不到文件路径报错。<br>
+因此，对于django的app来说，需要有两个文件：<code>__init.py__</code>和<code>apps.py</code>文件，其中<code>apps.py</code>中内容为</p>
+<pre><code class="language-python">from django.apps import AppConfig
+class PollsConfig(AppConfig):
+    default_auto_field = &quot;django.db.models.BigAutoField&quot;
+    name = &quot;你注册在setting中的app名字&quot;
+</code></pre>
+<h3 id=""></h3>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[nginx -- 学习 -- + uwsgi部署django项目]]></title>
+        <id>http://localhost:4000/post/nginx-xue-xi/</id>
+        <link href="http://localhost:4000/post/nginx-xue-xi/">
+        </link>
+        <updated>2023-07-04T09:36:46.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li><a href="https://www.bilibili.com/video/BV1F5411J7vK/?spm_id_from=333.337.search-card.all.click&amp;vd_source=c66937bc5207a56bafe7811cb2b0c4da">教程-8.04开始</a></li>
+</ul>
+<h3 id="1-什么是nginx">1. 什么是nginx</h3>
+<ul>
+<li>轻量级的高性能3web服务器，提供了http代理和反向代理、负载均衡，使用c语言编写，效率极高。</li>
+<li>一般使用uwsgi协议让nginx转发接收到的http协议给uWSGI（uwsgi协议是二进制，效率更高）</li>
+</ul>
+<h3 id="2-安装nginx">2. 安装nginx</h3>
+<p><code>sudo apt install nginx</code><br>
+安装成功之后输入<code>nginx -v</code>查看版本。<br>
+PS. nginx安装之后会默认占用80端口</p>
+<h3 id="3-配置nginx">3. 配置nginx</h3>
+<p><code>/etc/nginx/site-enabled/default</code>是nginx的配置文件<br>
+核心参数</p>
+<ul>
+<li>location / 有点像路由 表示所有这个路由的请求都由下面的参数代表的服务处理</li>
+<li>uwsgi_pass 将服务以uwsgi传递给***地址（例如127.0.0.1:8000）</li>
+<li>include 配置参数 如果需要使用uwsgi协议需要写 <code>/etc/nginx/uwsgi_params</code></li>
+</ul>
+<h3 id="4-启动停止nginx">4. 启动/停止nginx</h3>
+<p><code>sudo /etc/init.d/nginx start|stop|restart|status</code> 分别代表启动|停止|重启|查看状态<br>
+PS. nginx只要修改就需要重启，否则配置不生效</p>
+<h3 id="5-修改uwsgi配置文件适配nginx修改nginx适配uwsgi启动">5. 修改uwsgi配置文件，适配nginx，修改nginx，适配uwsgi启动</h3>
+<p>具体如下：</p>
+<pre><code class="language-vim">#default文件
+                # try_files $uri $uri/ =404; #注释掉这一句
+                uwsgi_pass 127.0.0.1:8000;  #添加这两句
+                include /etc/nginx/uwsgi_params;
+</code></pre>
+<pre><code>#uwsgi.ini
+#去掉http 修改为 socket
+socket = 127.0.0.1:8000 #这个端口号要和nginx的一致
+
+</code></pre>
+<p>PS. <code>sudo nginx -t</code>可以快速方便的告诉你配置文件是否有语法错误</p>
+<h3 id="6-排错">6. 排错</h3>
+<ul>
+<li>看日志文件！ 访问日志：<code>/var/log/nginx/error.log</code> 错误日志：<code>/var/log/nginx/access.log</code>  对应uwsgi日志 - 和<code>uwsgi.ini</code>同级下的<code>uwsgi.log</code></li>
+<li>502 代表nginx反向代理成功，但是对应的uwsgi未启动；还有一种就是uwsgi设置接受请求过小，在uwsgi.ini中添加<code>buffer-size = 65536</code>  -  主要还是得看日志</li>
+<li>404（分两种：django报错/nginx报错）  一可能是路由不在django项目；二可能是没有禁止掉nginx配置文件里的<code>try_files</code></li>
+</ul>
+<h3 id="7-nginx静态文件配置">7. nginx静态文件配置</h3>
+<ul>
+<li>创建新文件夹 - 存放所有的django静态文件 -- 例如<code>/home/mysite_static/</code></li>
+<li>在django setting.py中添加配置 <code>STATIC_ROOT</code>代表静态文件路径  -- 例如<code>/home/mysite_static/static/</code></li>
+<li>进入django项目，执行<code>python3 mange.py collectstatic</code> - 收集项目所有的静态文件</li>
+<li>nginx配置文件新增加</li>
+</ul>
+<pre><code class="language-vim">location /static {
+root /静态文件夹;  
+}
+</code></pre>
+<p>特别要注意路径，这个‘静态文件夹’下面还有一个static的文件夹，里面才是真正存放了所有的静态文件</p>
+<h3 id="8-404500-自定义报错页面">8. 404/500 自定义报错页面</h3>
+<ul>
+<li>在django的模板文件夹内添加<code>404.html</code>文件，当视图触发http404的时候自动显示该页面（在debug=false的时候彩起作用） -- 添加完之后记得重启nginx、uwsgi等服务</li>
+</ul>
+<h3 id="9-给原来的静态文件夹下新增文件夹结果404">9. 给原来的静态文件夹下新增文件夹，结果404</h3>
+<p>大概是因为项目中的静态文件路径和nginx的有所区别，<br>
+需要注意alias和root的区别，<br>
+nginx会根据请求的路径，去请求静态文件夹中可能存在的，文件夹中的静态文件。简而言之，nginx是可以嵌套的，但是前提是请求的路径需要对应的上。</p>
+<h3 id="10-alias与root的区别">10. alias与root的区别</h3>
+<p><a href="https://blog.csdn.net/m0_58709145/article/details/127754115">csdn参考</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[django学习 -- 前后端不分离的 -- part.2]]></title>
+        <id>http://localhost:4000/post/django-xue-xi-qian-hou-duan-bu-fen-chi-de-part2/</id>
+        <link href="http://localhost:4000/post/django-xue-xi-qian-hou-duan-bu-fen-chi-de-part2/">
+        </link>
+        <updated>2023-06-30T12:36:08.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="35时间选择插件">35.时间选择插件</h3>
+<p><a href="https://www.bootcss.com/p/bootstrap-datetimepicker/index.htm">download_link</a><br>
+<a href="https://bootstrap-datepicker.readthedocs.io/en/latest/options.html">office_link</a><br>
+<a href="https://blog.csdn.net/qq_28633249/article/details/77142352">usage</a></p>
+<ul>
+<li>使用极其简单：只需要选择dom然后绑定即可，在使用方法里可以设置各种参数</li>
+</ul>
+<pre><code class="language-js">$('#id_presettime').datetimepicker({
+   format: 'yyyy-mm-dd hh:ii'
+});   
+</code></pre>
+<h3 id="36modelfield定义成成表单的属性样式">36.modelfield定义成成表单的属性样式</h3>
+<pre><code class="language-python">class orderForm(ModelForm):
+    class Meta():
+        model = Orderform
+        fields = &quot;__all__&quot;
+
+    #方法一 原生的属性
+    widgets = {
+        #为html表单中name类型的input标签添加&quot;class=form-control&quot;
+        'name' : forms.TextInput(attrs = {&quot;class&quot; : &quot;form-control&quot;})
+        #为html表单中password类型的input标签添加&quot;class=form-control&quot;
+        'password' : formsPasswordInput( attrs = {&quot;class&quot; : &quot;form-control&quot;})
+        ...
+    }
+
+    #方法二 扩写父类函数的属性
+        def __init__(self,*arg,**kwargs):
+            super().__init__(*arg,**kwargs)
+            for name, field in self.fields.items():
+                # print(name,field) #这个是展示 self.fields.items()可以直接拿到定义在Meta中的fields字段
+                field.widget.attrs = {'class' : 'form-control'} #为生成的表单input赋予css属性 
+</code></pre>
+<ul>
+<li>扩充 这个属性可以继承 不过暂时对我没什么用处 因此pass过</li>
+</ul>
+<h3 id="37修改dajngo的modelform类的input的type类型为datetime-local">37.修改dajngo的modelform类的<code>input</code>的<code>type</code>类型为<code>datetime-local</code></h3>
+<ul>
+<li>第一种是通过前端js实现，一共三步：第一拿到原始的时间数据，第二选择input框然后修改type，第三讲原始的时间数据修改格式之后在赋予给input框：</li>
+</ul>
+<pre><code class="language-js">function changeDatetimeInput(id){
+    var time = $(`#${id}`).val().replaceAll('/','-');
+    $(`#${id}`).attr('type','datetime-local');
+    $(`#${id}`).val(time)
+}
+changeDatetimeInput('id_presettime');
+changeDatetimeInput('id_endtime');
+</code></pre>
+<p>需要注意的是，后端django传来的之间类型是<code>yyyy/mm/dd hh:ii</code>，但是html内置的时间选择input框的时间字符串格式要求是<code>yyyy-mm-ddThh:ii</code>，因此需要将原来的斜杠（/）替换成短横（-），中间·的<code>T</code>是一个时间字符表示，可以用大写字符T表示，但最终解析的时候空格也可以，<a href="https://blog.csdn.net/jim_LoveQ/article/details/107457771">具体参考</a></p>
+<ul>
+<li>第二种就是修改django的<code>DateTimeInput</code><br>
+这种看不懂原因，但是如果只是仅仅修改input_type的话是解析不了的，回答给出的原因是后端会因为输入合法判断和不通过，<a href="https://stackoverflow.com/questions/50214773/type-datetime-local-in-django-form">detail_link_and_solution</a></li>
+</ul>
+<pre><code class="language-python">from django import forms
+class DateTimeLocalInput(forms.DateTimeInput):
+    input_type = &quot;datetime-local&quot;
+
+class DateTimeLocalField(forms.DateTimeField):
+    # Set DATETIME_INPUT_FORMATS here because, if USE_L10N 
+    # is True, the locale-dictated format will be applied 
+    # instead of settings.DATETIME_INPUT_FORMATS.
+    # See also: 
+    # https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats
+    input_formats = [
+        &quot;%Y-%m-%dT%H:%M:%S&quot;, 
+        &quot;%Y-%m-%dT%H:%M:%S.%f&quot;, 
+        &quot;%Y-%m-%dT%H:%M&quot;
+    ]
+    widget = DateTimeLocalInput(format=&quot;%Y-%m-%dT%H:%M&quot;)
+</code></pre>
+<p>然后再自己的modelform中将想要修改input的typ类型为datetime-local的字段设置为<code>DateTimeLocalField</code>即可：</p>
+<pre><code class="language-python">#用法
+class orderEditForm(ModelForm):
+    presettime = DateTimeLocalField() #在这里将想要的字段设置即可
+    class Meta():
+        model = Orderform
+        fields = &quot;__all__&quot;
+</code></pre>
+<pre><code class="language-html">&lt;!-- {{field}}生成的具体样式  --&gt;
+&lt;input type=&quot;text&quot; name=&quot;endtime&quot; value=&quot;1899/12/31 00:00&quot; class=&quot;form-control&quot; id=&quot;id_endtime&quot;&gt;
+</code></pre>
+<h3 id="38通过validationerror来为钩子方法设置非法输入提示信息">38.通过validationError来为钩子方法设置非法输入提示信息</h3>
+<p><code>raise ValidationError</code></p>
+<h3 id="39密码加密-通过钩子方法定义">39.密码加密 通过钩子方法定义</h3>
+<ul>
+<li>钩子方法返回的就是储存到数据库中</li>
+<li>md5加密 加密需要“盐”，为了方便和效果 使用django在设置中生成的secret_key来当作“盐”</li>
+</ul>
+<pre><code class="language-python">from django.conf import settings
+import hashlib
+
+def md5(data_string):
+    obj = hashlib.md5(settings.SECRET_KEY.encode('utf-8'))
+    obj.update(data_string.encode('utf-8'))
+    return obj.hexdigest()
+</code></pre>
+<h3 id="40对于djanfo的orm如果搜索不到">40.对于djanfo的ORM，如果搜索不到</h3>
+<p>搜索不到就返回None，可以用来判断是否是合法请求</p>
+<h3 id="41对于表单验证">41.对于表单验证</h3>
+<p>所有验证通过的信息都储存在对应的<code>cleaned_data</code>中</p>
+<h3 id="42django报错">42.django报错</h3>
+<p><code>'Manager' object is not callable</code><br>
+原因是<code>objects</code>是一个属性而不是一个方法，写成<code>objects()</code>会报这个错</p>
+<h3 id="43用户登录">43.用户登录</h3>
+<ul>
+<li>cookies 和 session<br>
+无状态短链接<br>
+通过cookies给用户发放一个“凭证”， 保存在浏览器中的键值对，发送请求的时候自动携带<br>
+session django默认储存在mysql中</li>
+</ul>
+<p>业务过程：收到用户的提交 -&gt; 校验（在数据库比较） -&gt; 成功 生成随机字符串写入到用户浏览器的cookies以及数据库中（这里只需要调用<code>request.session()</code>方法即可 django会自动处理两个事件），并且会将传入的字符经过处理之后，以<code>{session_key:session_data}</code>键值对的形式保存在数据库中，其中session_key就是传递给浏览器的cookies，而session_data就是在下面代码中定义的字典（经过字符转换，需要使用的时候django会解码）</p>
+<pre><code class="language-python">        else: #登陆成功
+            request.session['info'] = { #写入session
+                'id':login_object.id,
+                'name' : login_object.name,
+            }
+</code></pre>
+<ul>
+<li>
+<p style="color:red;font-size:large;">PS. 特别需要注意的是，在后面的调用request.session中的属性的名字都是来自于此！</p>
+</li>
+</ul>
+<p>因此需要在用户访问的时候判断用户是否登录 -&gt; 已登录继续访问 未登录跳转回登陆页面：<br>
+用户请求-&gt; 拿到用户cookies并判断：</p>
+<pre><code class="language-python">#第一种方法 在每个请求前都加上对于cookies的判断
+    if not request.session.get('info'):
+        return redirect('/login/')
+</code></pre>
+<p>太low😎<br>
+应该使用django的中间件高效的处理</p>
+<h3 id="44django中间件">44.django中间件</h3>
+<p><a href="https://docs.djangoproject.com/zh-hans/4.1/topics/http/middleware/">官方文档</a></p>
+<ul>
+<li>对于django，每一个请求都需要经过很多中间件之后才能访问到视图函数；同样的，所有的视图函数返回值都需要经过很多中间件的处理才会返回给用户。</li>
+<li>django的中间件都是类，通过<code>process_request</code>方法对传入的请求进行处理，通过<code>process_response</code>对视图函数的return进行包装。如果某个请求不能通过一个中间件，那么就会直接返回给用户，而不会到达视图函数。</li>
+<li>中间件写好之后需要在setting.py文件中的MIDDLEWARE中注册（具体到类名），哪个在前面那个先执行。</li>
+<li>中间的<code>process_request</code>方法如果返回为None，那么继续向后执行；如果需要返回，那么返回的类型与视图函数的返回类似（例如render,redirect,HttpResponse等），并且不在向后执行。</li>
+<li>应用中间件：
+<ul>
+<li>1.注册中间件</li>
+<li>2.中间件中返回值</li>
+<li>3.通过中间件实现登录校验<br>
+代码实现</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python">#middleware.py文件
+from django.utils.deprecation import MiddlewareMixin
+from django.shortcuts import render,redirect
+from django.http import HttpResponse
+
+class SessionChectMiddleware(MiddlewareMixin):
+    def process_request(self,request):
+        #排除不需要登陆的页面
+        allow_url = ['/login/','/register/']
+        if request.path_info in allow_url:
+            return
+        #读取session
+        info = request.session.get('info')
+        if info:
+            return
+        else: 
+            return redirect('/login/')
+</code></pre>
+<pre><code class="language-python">#在setting.py文件中注册
+MIDDLEWARE = [
+    &quot;django.middleware.security.SecurityMiddleware&quot;,
+...... ,
+    &quot;cake.middleware.SessionChectMiddleware&quot;,
+]
+</code></pre>
+<p>PS. request.path_info可以获取到请求的url路径。</p>
+<h3 id="45注销操作-用户退出登录">45.注销操作 - 用户退出登录</h3>
+<p>也就是将浏览器的cookies和session删除<br>
+同样使用request.session中的方法即可</p>
+<h3 id="46通过session获取用户登录信息显示在导航栏">46.通过session获取用户登录信息显示在导航栏</h3>
+<p>每次视图函数的中传递的request中都包含session参数，因此可以直接在模板中调用<code>{{request.session.info.属性}}</code>来获取对应的信息（因为request是默认传递的），不用刻意通过别的模板参数来渲染。</p>
+<pre><code class="language-python">    &lt;button class=&quot;btn btn-secondary dropdown-toggle btn-sm&quot; type=&quot;button&quot; id=&quot;dropdownMenuButton2&quot; data-bs-toggle=&quot;dropdown&quot; aria-expanded=&quot;false&quot;&gt;
+                        {{ request.session.info.name}}
+&lt;/button&gt;
+</code></pre>
+<h3 id="47form和modelform">47.form和modelform</h3>
+<ul>
+<li>form可以自定义字段<br>
+modeform既可以自定义 还可以在数据库中拿取字段</li>
+<li>form没有save方法可以直接存入到数据库 但是modelform有</li>
+</ul>
+<h3 id="48图片验证码">48.图片验证码</h3>
+<p>-&gt; python中如何动态生成图片并写入值 (不做过多了解 仅仅当成黑盒使用)<br>
+<a href="https://www.cnblogs.com/crischou/p/7152974.html">参考文献</a></p>
+<ul>
+<li>需要pillow库</li>
+</ul>
+<pre><code class="language-python">import random
+from PIL import Image,ImageFont,ImageDraw,ImageFilter
+#需要注意！！ 这里的字体文件font_file路径组合是基于运行的根目录决定的 需要根据相对位置的不同进行调整！这里我将他放在根目录下面的static/文件夹内
+def check_code(width=120, height=30, char_length=5, font_file='./static/kumo.ttf', font_size=28):
+    # font = ImageFont.load_default() #使用默认字体
+    code = []
+    img = Image.new(mode='RGB', size=(width, height), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img, mode='RGB')
+    def rndChar():
+        &quot;&quot;&quot;
+        生成随机字母   
+        :return:
+        &quot;&quot;&quot;
+        return chr(random.randint(65, 90))
+    def rndColor():
+        &quot;&quot;&quot;
+        生成随机颜色
+        :return:
+        &quot;&quot;&quot;
+        return (random.randint(0, 255), random.randint(10, 255), random.randint(64, 255))
+    # 写文字
+    font = ImageFont.truetype(font_file, font_size)
+    for i in range(char_length):
+        char = rndChar()
+        code.append(char)
+        h = random.randint(0, 4)
+        draw.text([i * width / char_length, h], char, font=font, fill=rndColor())
+    # 写干扰点
+    for i in range(40):
+        draw.point([random.randint(0, width), random.randint(0, height)], fill=rndColor())
+    # 写干扰圆圈
+    for i in range(40):
+        draw.point([random.randint(0, width), random.randint(0, height)], fill=rndColor())
+        x = random.randint(0, width)
+        y = random.randint(0, height)
+        draw.arc((x, y, x + 4, y + 4), 0, 90, fill=rndColor())
+    # 画干扰线
+    for i in range(5):
+        x1 = random.randint(0, width)
+        y1 = random.randint(0, height)
+        x2 = random.randint(0, width)
+        y2 = random.randint(0, height)
+
+        draw.line((x1, y1, x2, y2), fill=rndColor())
+
+    img = img.filter(ImageFilter.EDGE_ENHANCE_MORE)
+    return img,''.join(code)
+ 
+if __name__ == '__main__':
+    # 1. 直接打开
+    # img,code = check_code()
+    # img.show()
+ 
+    # 2. 写入文件
+    img,code = check_code()
+    with open('code.png','wb') as f:
+        img.save(f,format='png')
+ 
+    # 3. 写入内存(Python3)
+    # from io import BytesIO
+    # stream = BytesIO()
+    # img.save(stream, 'png')
+    # stream.getvalue()
+ 
+    # 4. 写入内存（Python2）
+    # import StringIO
+    # stream = StringIO.StringIO()
+    # img.save(stream, 'png')
+    # stream.getvalue()
+
+    pass
+</code></pre>
+<p style='color:red'>需要注意！！`check_code()`的字体文件`font_file`路径组合是基于运行的根目录决定的 需要根据相对位置的不同进行调整！这里我将他放在根目录下面的`static/`文件夹内</p>
++ 然后就是部署到djang中：主要是将前端请求图片的url替换为动态的，然后生成验证码的视图函数返回对应的验证码图片。
+```python
+from .function.checkcode import check_code #这个就是刚才的生成验证码图片的函数
+from io import BytesIO #将图片储存到内存中需要用的库
+<p>def image_code(request):<br>
+'''生成验证码'''<br>
+img,str = check_code()<br>
+print(str)<br>
+stream = BytesIO()<br>
+img.save(stream, 'png')</p>
+<pre><code>return HttpResponse(stream.getvalue()) #从内存中读取到图片然后以http response的形式传回给前端 前端的img标签解析之后就是一个图片
+</code></pre>
+<pre><code>```html
+&lt;img src=&quot;/image/code/&quot;&gt; 
+&lt;!-- 只要调用对应的url就可以 --&gt;
+
+</code></pre>
+<p>PS. 需要注意的是：同一个文件中不要出现名字相同的函数，不管是引用的还是本文件的，会导致调用出错</p>
+<h3 id="49如何验证验证码呢">49.如何验证验证码呢？</h3>
+<p>通过session！ - 这样每个用户在登陆的时候对于验证码的验证就不会受到干扰，并且重复刷新也会更新session中对应的验证码。<br>
+这里有很多需要注意的点！</p>
+<ul>
+<li><code>add_errors()</code>可以向forms中指定字段添加错误提示信息，然后能在前端的<code>{{fields.属性字段.errors.0}}</code>中取到。</li>
+<li>由于验证码的字段是没有在用户model/数据库表中存在的，因此如果直接传入<code>request.POST</code>作为data参数会报错。因此应该将验证码字段单独剔除。</li>
+<li>验证码验证需要调用之前创建验证码时存入session的字段，将两个字段相比较判断是否正确。</li>
+<li>登录成功之后需要重新设置session的过期时间 ，因为为了验证码的登录时效，在生成验证码的时候会设置保存验证码对比字段的session信息时效比较短，因此登录成功之后需要重新设置。<br>
+最终的登录逻辑</li>
+</ul>
+<pre><code class="language-python">from .models import UserInfo #model中的类 是最原本的用户信息类 包括账户名和密码以及自动生成的id
+from io import BytesIO #生成图片储存在内存
+from .encrypt import md5 #加密
+
+class loginForm(forms.Form):
+    name = forms.CharField(label='用户名',widget=forms.TextInput(
+        attrs = {
+            'class' :&quot;my-input-item&quot;
+        }
+    ))
+    password = forms.CharField(label='密码',widget=forms.PasswordInput(
+        attrs = {
+            'class' :&quot;my-input-item&quot;
+        }
+    ))
+    code = forms.CharField(label='验证码',widget=forms.TextInput(
+        attrs={
+            'class':&quot;my-input-item&quot; ,
+            'style':&quot;margin-top:0;&quot; ,
+            'placeholder':&quot;验证码&quot;
+        }
+    ),required=True)
+
+    def cleaned_password(self):
+        return md5(self.changed_data.get('password')) #md5加密
+
+#登录页面 
+def login(request):
+    if request.method == 'GET':
+        form = loginForm()
+        return render(request,'login.html',{
+            'form':form
+        })
+
+    login_form = loginForm(data=request.POST)
+    if login_form.is_valid():
+        user_input_code = login_form.cleaned_data.pop('code') 
+        #验证码的校验
+        code = request.session.get('image_code','') #这个是在生成验证码的时候存入session中的，如果过时或者获取不到默认为空
+        if code.upper() != user_input_code.upper(): #不考虑大小写 
+            #如果验证码不相等
+            login_form.add_error('code','验证码错误')
+            return render(request,'login.html',{
+                'form' : login_form,
+            })
+
+        login_object = UserInfo.objects.filter(**login_form.cleaned_data).first() #校验用户密码
+        if not login_object:
+            login_form.add_error('name','用户名或密码错误')
+            return render(request,'login.html',{
+                'form' : login_form,
+            })
+        else: #登陆成功
+            request.session['info'] = { #写入session
+                'id':login_object.id,
+                'name' : login_object.name,
+            }
+            request.session.set_expiry(60 * 60 * 24 * 7) #再重新设置session 保存7天
+            return redirect('/login/manage/')
+    else: #表单验证未通过
+        return render(request,'login.html',{
+                'form' : login_form,
+            }) 
+
+#生成验证码
+def image_code(request):
+    '''生成验证码'''
+    img,str = check_code()
+    request.session['image_code'] = str
+    request.session.set_expiry(60) #设置验证码session 60s过时
+    stream = BytesIO()
+    img.save(stream, 'png')
+    return HttpResponse(stream.getvalue())
+</code></pre>
+<p>PS. UserInfo是在model.py文件中的ORM类，对应着储存登录用户帐号密码的数据库表。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[mysql -- null和空的区别]]></title>
+        <id>http://localhost:4000/post/mysql-null-he-kong-de-qu-bie/</id>
+        <link href="http://localhost:4000/post/mysql-null-he-kong-de-qu-bie/">
+        </link>
+        <updated>2023-06-29T14:14:27.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<p>空值时不占用空间的； 2、null其实是占用空间的； 打个比方来说，你有一个杯子，空值代表杯子是真空的，NULL代表杯子中装满了空气，虽然杯子看起来都是空的，但是区别是很大的。 NULL 其实并不是空值，而是要占用空间，所以mysql在进行比较的时候，NULL 会参与字段比较，所以对效率有一部分影响</p>
+</blockquote>
+<ul>
+<li><a href="https://blog.51cto.com/u_3303362/3795308">null和空的区别</a></li>
+</ul>
+<p>那什么时候用null什么时候用空值呢？</p>
+<blockquote>
+<p>更推荐使用空值。两者的含义不一样，前者代表不清楚，后者代表缺失值。但实际使用上null会在数据库操作方面造成很多的麻烦，因此更推荐设置为空值，并且字段设置为<code>NOT NULL</code></p>
+</blockquote>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[django学习 -- 可以感受到最原始的django框架是前后端不分离的 -- part.1]]></title>
+        <id>http://localhost:4000/post/lin-shi-ji-lu/</id>
+        <link href="http://localhost:4000/post/lin-shi-ji-lu/">
+        </link>
+        <updated>2023-06-26T16:21:01.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li>
+<h2 id="学习视频"><strong><a href="https://www.bilibili.com/video/BV1NL41157ph/?p=45&amp;spm_id_from=pageDriver&amp;vd_source=c66937bc5207a56bafe7811cb2b0c4da">学习视频</a></strong></h2>
+</li>
+</ul>
+<h3 id="1请求和响应">1.请求和响应</h3>
+<ul>
+<li>get post redirect</li>
+</ul>
+<h3 id="2数据库操作">2.数据库操作</h3>
+<ul>
+<li>mysql+pymsql</li>
+<li>ORM框架 -&gt; 帮助我们处理sql语句 =&gt; pip install mysqlclient<br>
+创建修改删除数据中的表（不用写sql语句）<br>
+操作表中的数据<br>
+=&gt; 创建数据库 django连接数据<br>
+PS. 需要在setting.py进行设置</li>
+</ul>
+<h3 id="3让django帮助创建数据库表">3.让django帮助创建数据库表</h3>
+<ul>
+<li>django会通过model中的类帮助生成sql创建表和字段<br>
+类名代表表明 属性代表列名</li>
+</ul>
+<pre><code class="language-python">class UserInfo(models.Model):
+    name = models.CharField(max_length=32)
+    password = models.CharField(max_length=64)
+</code></pre>
+<h3 id="4执行命令">4.执行命令</h3>
+<ul>
+<li>需要提前注册app -&gt; 在setting.py中注册<br>
+python manage.py makemigrations<br>
+python manage.py migrate</li>
+</ul>
+<h3 id="5需要注意">5.需要注意</h3>
+<ul>
+<li>在已经有的model类中添加属性 可能会导致原来已经有的数据缺失新增加的列的数据<br>
+django给出了两个选择，一是在命令行中默认添加输入，二是在新增加的属性字段中增加 <code>default=</code>字段，代表给原来没有的缺失值赋值。例如：<br>
+<code>age = models.CharField(defalut=18)</code><br>
+或者设置可以为空<br>
+<code>age = models.CharField(null=True,blank=True)</code></li>
+</ul>
+<h3 id="6通过django向表中插入数据">6.通过django向表中插入数据</h3>
+<ul>
+<li>
+<p><code>UserInfo.objects.create(name='cyanine',password=&quot;123456&quot;)</code> 插入数据 需要类中的属性对应<br>
+<code>a = UserInfo.objects.all()</code>获取所有数据 以列表返回，其中每一个元素都是一个对象 通过<code>.属性</code>获取具体的数据<code>a.name</code>，结合<code>.filter()</code>可以进行筛选查询<br>
+<code>.first()</code>获取获取到的第一个对象</p>
+</li>
+<li>
+<p>删除数据<br>
+<code>.delete()</code><br>
+可以添加<code>filter</code>进行筛选 例如<code>UserInfo.objects.filter(name='cyanine').delete()</code> 删除所有name为cyanine的数据<br>
+使用<code>.all()</code>选择全部<code>UserInfo.objects.all().delete()</code>删除这张表中的所有数据</p>
+</li>
+<li>
+<p>更新数据<br>
+<code>UserInfo.objects.all().updata(password=123456)</code>更新所有的password为123456<br>
+还可以结合<code>.filter()</code>进行筛选</p>
+</li>
+</ul>
+<h3 id="7django表单如果不写action-那么默认提交就是向当前页面发送一个post请求">7.django表单如果不写action 那么默认提交就是向当前页面发送一个post请求</h3>
+<h3 id="8django中的url命名能避免对url的硬编码">8.django中的url命名能避免对url的硬编码，</h3>
+<ul>
+<li>例如修改一个url 的路径如果以前在html采用的是硬编码，直接写对应的会导致后面修改维护极为困难。<br>
+但是如果采用url命名空间，那么修改的url并不会直接影响到，django会通过url的命名访问到，而不是硬编码。<code>{% url 'url_name' other_param%}</code>  这个url_name 就是在urls.py文件中的<code>path('url/example', views.function,name = url_name)</code>的name为url从的重命名，这样修改path对应的url，就不用在维护前端的页面了。</li>
+</ul>
+<h3 id="9model添加约束-数据库的约束">9.model添加约束 (数据库的约束)</h3>
+<ul>
+<li>例如员工表和部门表之间的关系，让员工表和部门表关联，通过<code>ForeignKry</code>方法中的<code>to</code>和<code>to_field</code>参数在django中设置。用途是可以方便对输入数据的合法性判断，例如员工不能属于一个不存在的部门，就可以很方便的进行判断。</li>
+<li>在员工表中<br>
+<code>department = models.ForeignKey(to = 'Department', to_field = 'id')</code><br>
+这就将员工表和部门表进行了关联，员工的部门只能属于Depatment中的一个；<code>to</code>表示关联的表名，<code>to_field</code>表明关联的表的一个列名字段。要注意的是，django在储存这样的字段时默认命名方式是<code>关联表名_id</code>（例如这个就是<code>depaetment_id</code>）。<br>
+于此对应，在获取的时候，如果直接通过字段/属性获取的话，例如<code>obj.联表名_id</code>，获取到的时储存在这张表中的对应关联表的数字，而不是我们想要的具体指代，因此django规定了如果直接<code>.联表名</code>就可以获取到关联表对应的那一行数据（封装为一个queryobj对象），然后就可以继续通过关联表内的属性进行查找。例如，部门表中一共有两个部门，字段为（id,部门名），内容为（1，主管部）（2，运行部），员工表关联</li>
+<li>级联删除 置空null<br>
+现在设想一种情况，如果部门表中的一个部门取消掉，那么与之关联的员工应该如何处理呢？常用的就是两种操作：将他们一并删除（这就是级联删除）；还有一种就是将他们设置为null。对应的这两种方式在django中需要这样设置：<br>
+<code>department = models.ForeignKey(to = 'Department', to_field = 'id',on_delete=models.CASCADE)</code> 级联删除<br>
+<code>department = models.ForeignKey(to = 'Department', to_field = 'id',null=True,blank=True,on_delete=models.SET_NULL)</code> 置空  需要注意的是 置空的前提就是这个字段可以为空<code>null = True</code> 这些都是django中的操作。</li>
+</ul>
+<h3 id="10性别存储">10.性别存储</h3>
+<ul>
+<li>model的choice 与数据库无关 是django的特性 可以方便的进行固定的选择储存。例如男女，单独为男女添加一个char字段会较为浪费空间，因此使用1/2这样的数字代替，但是数字不易读，因此django设计出了<code>choice</code>参数。</li>
+</ul>
+<pre><code class="language-python">gender_choice = (
+    (1,'男'),
+    (2,'女'),
+) #注意是元组套元组
+gender = models.SmallIntegerField(verbose_name='性别',choices = gender_choice) #verbose_name就是对列名（属性）的注解 可写可不写 写上为好
+#SmallIntegerField是小整数字段
+</code></pre>
+<ul>
+<li>这样字段的获取：如果直接<code>obj.gender</code>获取的就是数据库中对应的数字，但是django封装了一个判断方法，可以很方便的帮我们判断，然后返回的是我们希望现实的字段：<code>obj.get_gender_display()</code>。其中函数名字组成方式为<code>get_属性名字/字段名字_display()</code></li>
+</ul>
+<h3 id="11form和modelform">11.Form和ModelForm</h3>
+<ul>
+<li>11.1 form类 自动生成表单</li>
+</ul>
+<pre><code class="language-python">#views.py
+class MyForm(Form):
+    user = forms.CharField(widget=forms.Input)
+    password = forms.CharField(widget=forms.Input)
+    email = forms.CharField(widget=forms.Input)
+def user_add(request):
+    form = MyForm() #实力化一个form表单类
+    return render（request,'user_add.html',{'form':form}
+</code></pre>
+<pre><code class="language-html">&lt;!-- user_add.html --&gt;
+&lt;form method='post'&gt;
+{% for i in form %}
+{{ i }}
+{% endfor %}
+&lt;!-- 或者也可以一个一个自己写出来 比如{{form.user}} {{form.password}} --&gt;
+&lt;/form&gt;
+</code></pre>
+<ul>
+<li>11.2 ModelForm组件
+<ul>
+<li>实现数据库表单字段和前端form表单字段的自动生成</li>
+</ul>
+<ul>
+<li>对连接表/外键限制自动生成选择框</li>
+<li>定义models类中的<code>__str__</code>方法实现对连接表属性的直接展示</li>
+<li>定义生成表单样式的属性</li>
+<li><code>{{ obj.label }}</code>可以遍历出在modelform定义字段中的<code>label</code>参数<br>
+接下来是具体的代码展示 有点太多了...<br>
+记得添加了路由！！！（这个就不展示在代码中了，）</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python">#views.py
+#根据staff表单生成modelform类
+class staffMdoelForm(ModelForm):
+    class Meta:
+        model = Staff
+        fields = ['name','age','gender','phonenumber','create_time']
+
+#添加员工
+def staff_add(request):
+    form = staffMdoelForm() #实例化modelform类 
+    return render(request,'staff_add.html',{
+        'form':form
+        })
+</code></pre>
+<pre><code class="language-html">&lt;div style=&quot;width:50%;margin-left: 25%;margin-top: 25px;&quot;&gt;
+    &lt;div class=&quot;container&quot; &gt;
+        &lt;form method=&quot;post&quot;&gt;
+            &lt;h2&gt;添加新的员工信息&lt;/h2&gt;
+            {% csrf_token %}
+            {% for field in form %}
+            &lt;div class=&quot;mb-3&quot;&gt;
+                &lt;label class=&quot;form-label&quot;&gt;{{field.label}}&lt;/label&gt;
+                {{ field }}
+            &lt;/div&gt;
+            {% endfor %}
+            &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;&gt;确认添加&lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;    
+&lt;/div&gt;
+</code></pre>
+<pre><code class="language-python">#连接表modelform处理（html不用做太多改变）
+#在models.py中的从表添加__str__方法 让调用这个类的时候返回的不再是一个queryobject而是__str__定义好的返回值
+class Staff(models.Model):
+    name = models.CharField(verbose_name='员工姓名',max_length=32)
+......
+    def __str__(self):
+        return self.name
+#在views.py中定义modelform类的时候 字段选择直接写定义的而不是在数据库表单中的字段
+class userModelForm(ModelForm):
+    class Meta:
+        model = UserInfo #注 Userinfo表单中的identify是引用了Staff表单中的id作为外键
+        fields = ['name','password','identify']
+</code></pre>
+<h3 id="12重定向">12.重定向</h3>
+<ul>
+<li><code>from django.shortcuts import redirect</code>或者<code>from django.http import HttpResponseRedirect</code><br>
+return一个重定向url的实例即可</li>
+</ul>
+<h3 id="13前端url实现删除请求">13.前端url实现删除请求</h3>
+<ul>
+<li>通过前端发送一个带有删除目标信息的GET请求，然后后端获取删除即可，但是这个带有删除目标信息的url该如何组装呢？通过url的组成规律，添加<code>/?id=</code>信息传递，代码如下：<br>
+<code>&lt;a href=&quot;/login/manage/delete/?id={{user.0}}&quot;&gt;删除&lt;/a&gt;</code>  #这其中的{{id.0}}通过django的模板语法动态赋予目标的id信息<br>
+对应处理函数（记得注册url）</li>
+</ul>
+<pre><code class="language-python">def delete_user_info(request):
+    id = request.GET.get('id')
+    UserInfo.objects.filter(id = id).delete()
+    return HttpResponseRedirect('/login/manage/')
+</code></pre>
+<h3 id="14django的模板语法">14.django的模板语法</h3>
+<ul>
+<li>其中最开始的<code>{% extends 'nav.html'%}</code>必须处于子页面的第一个加载位置，意味着如果前面有哪怕<code>{% load static %}</code>也会报错。</li>
+</ul>
+<h3 id="15django正则匹配url">15.django正则匹配url</h3>
+<ul>
+<li>这样就不用前端写带有get参数的url，后端也不需要get获取,而是直接作为一个解析好的参数传递给视图进行处理，二是直接及进行请求和解析。同时也要注意，在url中添加的正则顺序不影响在命名url中的参数顺序</li>
+</ul>
+<ul>
+<li>具体如下：</li>
+</ul>
+<pre><code class="language-python">#html中
+&lt;a href=&quot;{% url 'edit' user.0 %}&quot;&gt;操作...&lt;/a&gt;
+#url中
+path('login/manage/&lt;int:id&gt;/edit/',views.edit_user_info,name = 'edit')
+#views中
+def edit_user_info(request,id):
+    default_userinfo = UserInfo.objects.filter(id = id).first()
+    ....
+</code></pre>
+<p>可以看到<code>&lt;int:id&gt;</code>是在<code>/edit/</code>之前的，但是在html的url中这个顺序不影响。同时在views中对应的函数可以直接接收到url中正则匹配到的参数，而不用再通过解析get请求获取。</p>
+<h3 id="16在django的模板中可以通过objget_联表名_display获取到和后端get_联表名_display的效果直接返回对照过后的结果而不是对应的关联id">16.在django的模板中，可以通过<code>obj.get_联表名_display</code>获取到和后端<code>get_联表名_display()</code>的效果，直接返回对照过后的结果而不是对应的关联id。</h3>
+<h3 id="17django的模板可以进行的额外操作">17.django的模板可以进行的额外操作：</h3>
+<ul>
+<li><code>{{number : add 1}}</code>就是python的<code>+=1</code>操作，<code>{{datetime | date :'Y-m-d}}</code>就是python中的<code>strftime()</code>函数(要注意的是里面的格式不需要带<code>%</code>)</li>
+</ul>
+<h3 id="18modelform的字段校验函数">18.modelform的字段校验函数</h3>
+<ul>
+<li><code>is_valid()</code>检验提交post请求中的form表单中的字段是否为空，具体的字段就是在<code>modelform</code>中<code>fields</code>列表定义的那些.</li>
+<li>同时还可以在modelforms类中进行字段校验 错误的信息会保存在用post请求实例化的modelform中。</li>
+</ul>
+<pre><code class="language-python">class staffMdoelForm(ModelForm):
+    phonenumber = forms.CharField(label='电话号码',max_length=11,min_length=11)#进行的字段校验 
+    #规定电话号码的长度为11位
+    #还可以通过validators参数进行正则筛选
+    class Meta:
+        model = Staff
+        fields = ['name','age','gender','phonenumber','create_time']
+    phonenumber = forms.CharField(label='电话号码',max_length=11,min_length=11)
+    #规定电话号码的长度为11位
+    #还可以通过validators参数进行正则筛选
+</code></pre>
+<h3 id="19调整返回的提示信息为汉语">19.调整返回的提示信息为汉语</h3>
+<ul>
+<li>通过修改setting.py文件中的语言项</li>
+</ul>
+<pre><code class="language-python">#setting.py
+# LANGUAGE_CODE = &quot;en-us&quot; 注释掉
+LANGUAGE_CODE = &quot;zh-hans&quot; #添加
+</code></pre>
+<h3 id="20modelform中instance参数">20.modelform中<code>instance</code>参数</h3>
+<ul>
+<li>通过设置单条数据对表单进行填充，例如：</li>
+</ul>
+<pre><code class="language-python">#views.py中的一个方法
+default_userinfo = UserInfo.objects.filter(id = id).first() #根据id在数据库中获取对应的一条数据
+userform = userModelForm(instance=default_userinfo) # 通过instance参数设定一个实例化的表单 让他在前端渲染的时候自动在value上显示从数据库中拿到的默认值
+</code></pre>
+<ul>
+<li>通过<code>instance</code>参数和<code>data</code>参数可以实现数据库数据的更新</li>
+</ul>
+<pre><code class="language-python">#在views.py中的某个函数
+default_userinfo = UserInfo.objects.filter(id = id).first()
+userform = userModelForm(data=request.POST,instance=default_userinfo)
+if userform.is_valid():
+    userform.save()
+    return redirect('/login/manage/')
+else:
+    return render(request,'edit_info.html',{
+        'userform': userform,
+    })
+</code></pre>
+<ul>
+<li>如果想在用户输入以外的字段进行更新，那么在modelform实例化之后通过<code>instacne</code>属性可以修改：</li>
+</ul>
+<pre><code class="language-python">userform = userModelForm(data=request.POST,instance=default_userinfo)
+# useform.instance.字段 =  值
+</code></pre>
+<h3 id="21django查询排序">21.django查询排序</h3>
+<ul>
+<li><code>obj.objects.all().order_by('属性名')</code><br>
+如果给属性名前面添加减号 代表逆向（高到低）排序</li>
+</ul>
+<h3 id="22给原有的表中添加新的字段产生错误djangocoreexceptionsvalidationerror-error">22.给原有的表中添加新的字段产生错误<code>&quot;django.core.exceptions.ValidationError&quot; error</code></h3>
+<ul>
+<li>产生原因：大概率是因为追加新的字段设置默认值的时候产生的格式错误，例如datetime格式但是没有设置默认或者默认格式错误，造成这样的原因。</li>
+<li>解决方法：重置所有的<code>migrations</code></li>
+<li>操作：删除migrations文件夹下除了<code>__init__.py</code>文件以外所有的文件，然后重新执行数据库迁移命令：<code>python manage.py makemigrations</code>, <code>python manage.py migrate</code></li>
+<li>如果还不成功可能是因为数据库中原本存在的数据导致，将数据库清库（所有表删除），然后在执行即可。</li>
+</ul>
+<h3 id="23django报错orderform-object-has-no-attribute-get">23.django报错<code>'orderForm' object has no attribute 'get'</code></h3>
+<ul>
+<li>原因是在设置<code>input</code>标签的样式的时候重写的父类方法出错，参数多写了一个<code>self</code></li>
+</ul>
+<pre><code class="language-python">#错误源码
+    def __init__(self,*arg,**kwargs):
+        super().__init__(self,*arg,**kwargs)
+        for name, field in self.fields.items():
+            # print(name,field) #这个是展示 self.fields.items()可以直接拿到定义在Meta中的fields字段
+            field.widget.attrs = {'class' : 'form-control'} #为生成的表单input赋予css属性 
+</code></pre>
+<ul>
+<li>解决方法 ： 去掉<code>super().__init__(self,*arg,**kwargs)</code>这一行中的self即可，正确写法：<br>
+<code>  super().__init__(*arg,**kwargs)</code></li>
+<li>探究一下为什么<code>super</code>不需要<code>self</code>作为方法的第一个参数：<br>
+因为<code>super()</code>是一个类 <a href="https://mozillazg.com/2016/12/python-super-is-not-as-simple-as-you-thought.html#hidsuper">reference</a> -- 感觉好多...暂时搁置一下...😖</li>
+</ul>
+<h3 id="24关闭浏览器校验">24.关闭浏览器校验</h3>
+<p>在form表单添加<code>novalidate</code></p>
+<pre><code class="language-html">&lt;form method=&quot;post&quot; novalidate &gt;
+</code></pre>
+<h3 id="25关于models中null和black字段">25.关于models中null和black字段</h3>
+<ul>
+<li>需要同时开启，但是数据库更推荐默认值为空值，因此设置<code>default=None</code>而不是<code>null</code>。<br>
+如果设置<code>blank=True</code>但是不开启<code>null=True</code>，那么在插入的时候，如果传回来的数据为空，插入会报错不能为null字段...总之还是很迷惑的报错....但是解决方法还是最好设置两个都为True并且设置默认字段为<code>None</code>。如果为<code>null</code>，那么在数据传入到前端的时候会默认输出null或者none，而不是将那片区域置空，对于前端的用户输入逻辑不太友好。</li>
+</ul>
+<h3 id="26modelforms便捷写法">26.modelforms便捷写法</h3>
+<ul>
+<li>在添加fields的时候，可以用<code>__all__</code>一次性获取全部，<code>exclude = [ 排除的字段 ]</code>排除掉不要的字段。</li>
+</ul>
+<pre><code class="language-python">class orderForm(ModelForm):
+    class Meta():
+        model = Orderform
+        fields = &quot;__all__&quot; #注意要引号
+        # exclude = ['字段1','字段二', .... ]
+</code></pre>
+<h3 id="27后端表单正则校验">27.后端表单正则校验</h3>
+<ul>
+<li>在modelforms类中声明字段，然后通过validators参数设置正则表达式：</li>
+</ul>
+<pre><code class="language-python">from django.core.validators import RegexValidator #需要导入正则类
+class exampleModelForms(forms.ModelForm):
+    moblie = forms.CharField(
+        label = '手机号码',
+        validactors = [RegexValidator(r'^1[3-9]\d{9}$','手机号格式错误')]       
+        #校验失败返回后面的提示信息而不是默认的了~ 
+    )
+</code></pre>
+<h3 id="28钩子方法进行字段校验">28.钩子方法进行字段校验</h3>
+<ul>
+<li><a href="https://www.cnblogs.com/open-yang/p/11223175.html">详细的</a></li>
+<li>这里摘列出常用的代码结果</li>
+</ul>
+<pre><code class="language-python">class exampleModelForms(forms.ModelForm):
+   def clean_字段名(self): #这个需要在一个modelform类中 这个函数名modelform会自动生成对应的方法
+           pass 
+           name = self.cleaned_data.get('name')
+           if name=='admin':
+               raise ValidationError('admin是超级管理员，不能注册！')#这个错误会直接扔进该字段的错误类别中：name.errors
+           return self.cleaned_data.get('name')
+</code></pre>
+<h3 id="29规定modelform中不可编辑的部分">29.规定modelform中不可编辑的部分</h3>
+<p>在modelform中字段中设置参数<code>disabled= True</code>即可，这样在前端页面渲染出来的这一条字段是不可以更改的。</p>
+<h3 id="30通过modelform判断要添加的数据是否重复">30.通过modelform判断要添加的数据是否重复</h3>
+<ul>
+<li><code>order_edit_form = orderEditForm().filter(id=你要查询的).exist()</code> 返回True/False<br>
+这个方法需要添加在modelform中的钩子方法中。</li>
+<li>排除自己以外的是否存在重复？(主要是在修改数据的时候）<br>
+通过<code>exclude</code>排除自己后判断：<code>order_edit_form = orderEditForm().exclude(id='自己的id' ).filter(id=你要查询的).exist()</code> 返回True/False</li>
+</ul>
+<p>总结 编辑和添加的不同</p>
+<h3 id="31查询根据某个字的一部分进行">31.查询（根据某个字的一部分进行）</h3>
+<ul>
+<li><code>filter()</code>还支持传入字典：</li>
+</ul>
+<pre><code class="language-python">order_edit_form = orderEditForm().filter(id=你要查询的,other=你要查询的)
+#等于
+query_dict = { 'id' : 要查询的, 'other' : 要查询的 }
+order_edit_form = orderEditForm().filter(**query_dict)
+ #需要注意传入字典的时候需要两个**
+</code></pre>
+<p>PS. 通常我们再变量前加一个星号(*)表示这个变量是元组/列表，加两个星号表示这个参数是字典</p>
+<h3 id="32问题记录modelform不能更新一行数据的部分字段">32.问题记录：modelform不能更新一行数据的部分字段</h3>
+<ul>
+<li><a href="https://www.qiniu.com/qfans/qnso-8216353#comments">解决方法</a><br>
+这里的解决方法很多 包括自定义钩子函数对post数据进行清晰、定义一个工厂函数处理每次不同的字段等，不过都太高端了，部分概念我还没有理解清楚😭</li>
+<li>因此我打算采取最简单的 -- 一个字段一个字段的去<code>update</code>😳。 或者采用dict的模式，处理不变的字段和更新后的字段 组合成为一个更新后的字典然后通过modelform保存..</li>
+<li>最后发现是我实例化出错了的问题....(真诚的眼瞎😭)</li>
+</ul>
+<pre><code class="language-python">    row_object = Orderform.objects.filter(id = id).first() #注意这里实例化的是一个form类 之前错误的原因是这里也写成了一个modelform类 这就导致下面instance的时候会报错 而且默认不更新的前端数据实际上是会传递回来的 作为表单的默认值
+    order_edit_form = orderEditForm(data=request.POST,instance=row_object) 
+    #这里实例化的是一个modelforms类
+</code></pre>
+<h3 id="33django的条件查询">33.django的条件查询</h3>
+<p>除了固定的等于（<code>=</code>）查询外，还可以通过给字段/属性添加下划线的方式规定范围查询</p>
+<ul>
+<li>数字方面：gt、gte、lt、lte：大于、大于等于、小于、小于等于。<br>
+<code>list = BookInfo.objects.filter(id__gt=3) </code> 代表id大于3的数据<br>
+PS. 不等于可以通过<code>exclude</code>过滤</li>
+<li>字符串方面：startswith、endswith：以指定值开头或结尾；contains：是否包含。<br>
+<code>list = BookInfo.objects.filter(btitle__endswith='部')</code> 查询是否数据中btitle字段以‘部’这个字结尾的一行数据。</li>
+<li>日期查询： year、month、day、week_day、hour、minute、second：对日期时间类型的属性进行运算。<br>
+<code>list = BookInfo.objects.filter(bpub_date__year=1980)</code> 查询1980年发表的图书<br>
+<code>list = BookInfo.objects.filter(bpub_date__gt=date(1990,1,1))</code>  查询1980年1月1日后发表的图书。</li>
+<li>还有很多查询： 例如比较同一行数据两个字段之间的关系（如阅读数量&gt;=评论数量）、与或非查询、聚合等... 具体参考<a href="https://www.jianshu.com/p/bde1ece240bc">reference</a>或者官网</li>
+</ul>
+<p>PS. 1. <code>filter</code>可以连续使用 ：<code>list=BookInfo.objects.filter(bread__gt=20).filter(id__lt=3)</code> 2. <code>filter</code>可以传入字典</p>
+<h3 id="34设置get默认值">34.设置get默认值</h3>
+<ul>
+<li><code>request.GET.get('page', '1')</code> 获取get请求，如果get没有附带page参数，那么默认是1.</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Extra details of python - for long term - part.2]]></title>
+        <id>http://localhost:4000/post/extra-details-of-python-for-long-term-part2/</id>
+        <link href="http://localhost:4000/post/extra-details-of-python-for-long-term-part2/">
+        </link>
+        <updated>2023-06-26T04:11:23.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="2023-06-26">2023-06-26</h1>
+<h3 id="9-python中的__init__py">9. python中的__init__.py</h3>
+<p><a href="https://zhuanlan.zhihu.com/p/115350758">reference</a><br>
+在python工程中，当python在一个目录下检测到<code>__init__.py</code>文件时，就会把它当成一个module。<code>__init__.py</code>可以是空的，也可以有内容。</p>
+<p>--未整理完</p>
+<h3 id="10-python中的getattr方法">10. python中的getattr()方法</h3>
+<p><code>getattr</code>方法可以获取一个模块其中的方法和属性，包括class名、直接定义的方法以及属性。<br>
+代码示例：</p>
+<pre><code class="language-python">#在example.py文件中
+class magical_method():
+    def __init__(self,num1,num2,num3):
+        self.num1 = num1
+        self.num2 = num2
+        self.num3 = num3
+    def __contains__(self,tar):
+        if tar == self.num1 or tar == self.num2 or tar == self.num3:
+            return False
+        else:
+            return True
+    def name(self):
+        print('qwe')
+
+def another_example():
+    print('asdasd')
+
+ppp = 2
+</code></pre>
+<pre><code class="language-python">#在同目录下的test.py文件中
+import example
+attr = dir(example)
+print(attr)
+</code></pre>
+<pre><code class="language-python">#输出
+['__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'another_example', 'magical_method', 'ppp']
+</code></pre>
+<p>需要注意的几个点：一只会输出直接定义在模块中的类名、方法、属性（变量），如果属性/方法/类是在其他类/方法之下，那么不会遍历出来；二可以通过<code>isinstance(attr, type)</code>方法判断是否是类、<code>callable(func_name)</code>判断是否是函数（是否可以被调用）、<code>hasattr(obj, attr)</code>用来判断属性是否在指定类中；三如果没有<code>__name__ == &quot;__main__&quot;</code>，那么在dir的时候会执行该模块。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[python网络编程 -- 建立一个http服务器+twisted模块--part.2]]></title>
+        <id>http://localhost:4000/post/part2/</id>
+        <link href="http://localhost:4000/post/part2/">
+        </link>
+        <updated>2023-06-26T03:45:40.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="">=&gt;</h1>
+<p>HTTP基础响应</p>
+<ol>
+<li>http服务器</li>
+</ol>
+<pre><code class="language-python"># 1.首先需要socket进行协议、端口设置
+# 2. 然后因为性能原因 需要设置多进程响应处理客户端请求
+# 3. 设置处理客户端发送信息
+# 4. 返回响应的html以及http头信息
+import socket
+import multiprocessing
+class HttpServer:
+    def __init__(self,port):  #进行socket初始设置 绑定端口开启监听
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象
+        self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置
+        self.server_socket.bind(('0.0.0.0',port)) #绑定监听端口
+        self.server_socket.listen() #开启监听 在构造函数内开启监听代表每一个实例都是一个http服务器程序
+
+    def start(self): #接收服务端信息 进行处理
+        while True:
+            client_scoket, client_addr = self.server_socket.accept()
+            print(f'【新的客户端连接】客户端ip{client_addr[0]},访问端口{client_addr[1]}')
+            handle_socket = multiprocessing.Process(target=self.handle_response,args=(client_scoket,))#启动一个进程处理这个客户端请求
+            handle_socket.start()
+
+    def handle_response(self,client_socket): #处理客户端发送的请求信息
+        request_headers = client_socket.recv(1024)
+        print(f'【客户端清请求头信息】{request_headers}') #处理客户端请求头信息
+
+        #开始处理响应给客户端的信息
+        response_start_line = 'HTTP/1.1 200 OK\r\n' #本次相应成功
+        #手动写http响应头 之后会发送给客户端会被浏览器解析
+        response_header = 'Server:Cyanine Hrrp Server\r\nContent-Type:text/html\r\n'
+        #返回的html代码 也就是页面主题 最基本的开发就是需要在代码中硬嵌入html页面代码
+        response_body = &quot;&lt;html&gt;&quot;\
+                            &quot;&lt;head&gt;&quot;\
+                                &quot;&lt;meta charset=utf-8&gt;&quot;\
+                                &quot;&lt;title&gt;Cyanine Http Server Response&lt;/title&gt;&quot;\
+                            &quot;&lt;/head&gt;&quot;\
+                            &quot;&lt;body&gt;&quot;\
+                                &quot;&lt;h1&gt;&quot;\
+                                &quot;Cyanine's Http server response...&quot;\
+                                &quot;&lt;/h1&gt;&quot;\
+                            &quot;&lt;/body&gt;&quot;\
+                        &quot;&lt;/html&gt;&quot;
+        #要注意在响应头和响应body之间添加换行 否则浏览器不能解析出响应内容
+        response = response_start_line + response_header + '\r\n'+response_body
+        client_socket.send(bytes(response,'UTF-8')) #服务器响应
+        client_socket.close() #https是无状态协议 因此相应完成一次之后就会关闭连接
+
+def main():
+    #80端口大部分服务的默认端口 因此如果使用的话 就可以直接属于域名/主机地址访问服务
+    #如果不是的话 需要指定端口 :**
+    http_server = HttpServer(9090)
+    http_server.start()
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>一些代码更详细的讲解<br>
+<code>self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象</code><br>
+ocket(family,type[,protocol])函数中，family 指定应用程序使用的通信协议的协议族，对于TCP/IP协议族，该参数为AF_INET；type 是要创建套接字的类型，socket.SOCK_STREAM表示流式socket，使用TCP协议的时候选择此参数，SOCK_DGRAM数据报式socket，使用UDP协议的时候选择此参数；protocol 指明所要接收的协议类型，通常为0或者不填。<br>
+<code>self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置  level: 设置选项所在的协议层编号，有四个可用配置项，其中socket.SOL_SOCKET表示基本嵌套字接口....剩下的好复杂，看不太懂，暂且放下。看到的[参考](https://blog.csdn.net/c_base_jin/article/details/94353956) </code>client_socket.send(bytes(response,'UTF-8')) #服务器响应<br>
+使用<code>bytes</code>的原因是socket只能发送字节数据流，因此需要将response转换为bytes类型，再发送。</p>
+<h1 id="-2">=&gt;</h1>
+<p>http服务器建立相应目录<br>
+之前的http服务只能进行一次固定的响应，并且html代码出现在python代码中不方便修改，没有进行前后端分离，较为落后。因此我们可以建立一个目录，目录下有不同的HTML页面，根据请求的不同，相应响应目录下对应的html文件。<br>
+具体实现：</p>
+<pre><code class="language-python"># 添加相应目录 原因在于代码维护以及更加高效的响应
+# 需要注意 读取html或者其他文件都是以bytes的格式
+# os的注意点 os.getcwd() os.sep os.path.normpath()
+# 正则的写法 暂不做详细了解 
+
+import socket
+import os #os处理响应文件目录
+import re #正则匹配请求中的文件地址
+import multiprocessing
+HTML_ROOT_DIR = os.getcwd() + os.sep + &quot;template&quot;
+
+class HttpServer:
+    def __init__(self,port):  #进行socket初始设置 绑定端口开启监听
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象
+        self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置
+        self.server_socket.bind(('0.0.0.0',port)) #绑定监听端口
+        self.server_socket.listen() #开启监听 在构造函数内开启监听代表每一个实例都是一个http服务器程序
+
+    def start(self): #接收服务端信息 进行处理
+        while True:
+            client_scoket, client_addr = self.server_socket.accept()
+            print(f'【新的客户端连接】客户端ip{client_addr[0]},访问端口{client_addr[1]}')
+            handle_socket = multiprocessing.Process(target=self.handle_response,args=(client_scoket,))#启动一个进程处理这个客户端请求
+            handle_socket.start()
+    
+    #读取对应文件数据
+    def read_file(self,file_name):
+        file_path = os.path.normpath(HTML_ROOT_DIR + file_name)
+        print('【请求文件路径】'+ file_path)
+        f = open(file_path,'rb') #二进制读取
+        file_data = f.read()
+        f.close()
+        print('【请求文件路径】该文件请求结束！')
+        return file_data
+
+    #获取二进制文件
+    def get_binary_data(self,file_name):
+        response_body = self.read_file(file_name)
+        return response_body
+
+    #读取html文件 返回相应的信息
+    def get_html_file(self,file_name):
+        response_start_line = 'HTTP/1.1 200 OK\r\n' #本次相应成功
+        #手动写http响应头 之后会发送给客户端会被浏览器解析
+        response_header = 'Server:Cyanine Hrrp Server\r\nContent-Type:text/html\r\n'
+        response_body = self.read_file(file_name)
+        return response_start_line + response_header + '\r\n' + response_body.decode('utf-8')
+    def handle_response(self,client_socket): #处理客户端发送的请求信息
+        request_headers = client_socket.recv(1024)
+        print(f'【客户端清请求头信息】{request_headers}') #处理客户端请求头信息
+        file_name = re.match(r&quot;\w+ +(/[^ ]*)&quot;, request_headers.decode('utf-8').split('\r\n')[0]).group(1)
+        if file_name == &quot;/&quot;: #如果请求的是根目录 那么实际访问的是index.html页面
+            file_name = '/index.html'
+        if file_name.endswith(&quot;.html&quot;) or file_name.endswith(&quot;.htm&quot;):
+            client_socket.send(bytes(self.get_html_file(file_name),'utf-8'))
+        else:
+            response_start_line = 'HTTP/1.1 200 OK\r\n' #本次响应成功
+            response_header ='Server:Cyanine Hrrp Server\r\nContent-Type:image/x-icon\r\n'
+            client_socket.send((response_start_line + response_header + '\r\n').encode('utf-8'))
+            client_socket.send(self.get_binary_data(file_name))
+        client_socket.close() #https是无状态协议 因此相应完成一次之后就会关闭连接
+
+def main():
+    #80端口大部分服务的默认端口 因此如果使用的话 就可以直接属于域名/主机地址访问服务
+    #如果不是的话 需要指定端口 :**
+    http_server = HttpServer(70)
+    http_server.start()
+    
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>代码细节解析<br>
+一这是一个简单的http服务器相应目录，只是简单处理index.html、hello.html以及favicon.ico文件；二为了结构清晰，尽管获取<code>get_binary_data()</code>方法只是给<code>read_file</code>换了个名字，但是能够将功能更加清晰的分割开来；三不管什么响应，都要记得添加对应的http响应头；四响应头和响应内容和分开发送；五要注意手写响应头的时候各个部分之间的<code>\r\n</code>；<br>
+同时这里还遇到了一个难以理解的问题，如果是以80端口启动服务，那么就算favicon的请求没有响应头，浏览器也会正确解析出来并显示图标，但是如果换成其他的端口，那么就不能正常相应，必须要添加响应头。猜测可能是因为80端口是默认，而请求favicon也是默认的一个请求，因此在这个活动中，浏览器会自动解析把，但是非默认端口就不可以。<a href="https://blog.csdn.net/laocooon/article/details/130762587#comments_27306408">和一位相同问题的大佬的讨论以及他的代码</a>。这个问题怎么也找不到答案，因此暂且搁置吧😭。总是还是要记得在每一个响应前添加响应头。不过当然针对简单的，复杂的话有很多web框架会帮我们滴~~~</p>
+<h1 id="-3">=&gt;</h1>
+<p>动态请求处理<br>
+web有两个处理阶段：静态处理阶段、动态处理阶段。<br>
+之前的响应目录实际上是静态处理，而动态web是可以根据动态的判断决定最终返回的数据内容。<br>
+python动态处理实现：(只是简单的原理了解，不涉及复杂的动态相应框架)</p>
+<pre><code class="language-python"># 处理动态请求 
+import socket
+import os #os处理响应文件目录
+import re #正则匹配请求中的文件地址
+import multiprocessing
+HTML_ROOT_DIR = os.getcwd() + os.sep + &quot;template&quot;
+import sys 
+sys.path.append('packages')
+
+class HttpServer:
+    def __init__(self,port):  #进行socket初始设置 绑定端口开启监听
+        self.port = port
+        self.server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM) #实例socket对象
+        self.server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #进行socket选项设置
+        self.server_socket.bind(('0.0.0.0',port)) #绑定监听端口
+        self.server_socket.listen() #开启监听 在构造函数内开启监听代表每一个实例都是一个http服务器程序
+
+    def start(self): #接收服务端信息 进行处理
+        while True:
+            client_scoket, client_addr = self.server_socket.accept()
+            print(f'【新的客户端连接】客户端ip{client_addr[0]},访问端口{client_addr[1]}')
+            handle_socket = multiprocessing.Process(target=self.handle_response,args=(client_scoket,))#启动一个进程处理这个客户端请求
+            handle_socket.start()
+
+    def handle_response(self,client_socket): #处理客户端发送的请求信息
+        request_headers = client_socket.recv(1024)
+        print(f'【客户端清请求头信息】{request_headers}') #处理客户端请求头信息
+        file_name = re.match(r&quot;\w+ +(/[^ ]*)&quot;, request_headers.decode('utf-8').split('\r\n')[0]).group(1)
+        if file_name.startswith('/packages'): #访问动态页面
+            #获取动态参数 
+            request_name = file_name[file_name.index('/',1)+1:]#访问路径
+            # print(&quot;访问路径：&quot;+request_name)
+            param_value = '' #请求参数
+            if request_name.__contains__('?') :#？是url中的参数分隔符号
+                request_value = request_name[request_name.index('?') + 1 :]
+                param_value = request_value.split('=')[1]
+                request_name = request_name[0:request_name.index('?')]
+                # print(request_name)
+            model_name = request_name.split('/')[0]
+            method_name = request_name.split('/')[1]
+            model = __import__(model_name)
+            method = getattr(model,method_name)
+            response_body = method(param_value)
+            print('【响应数据是】：'+response_body)
+
+            response_start_line = 'HTTP/1.1 200 OK\r\n' 
+            #手动写http响应头 之后会发送给客户端会被浏览器解析
+            response_header = 'Server:Cyanine Hrrp Server\r\nContent-Type:text/html\r\n'
+            response = response_start_line+response_header+'\r\n'+response_body
+            print(response)
+            client_socket.send(bytes(response,'UTF-8'))
+        client_socket.close()
+
+
+def main():
+    #80端口大部分服务的默认端口 因此如果使用的话 就可以直接属于域名/主机地址访问服务
+    #如果不是的话 需要指定端口 :**
+    http_server = HttpServer(80)
+    http_server.start()
+    
+if __name__ == '__main__':
+    #http://localhost/packages/echo/service?param=canshu
+    main()
+</code></pre>
+<p>同时还需要一个在同目录下的packages文件夹，文件路径如下</p>
+<pre><code>├─packages
+│  │  echo.py
+│  │  __init__.py
+│  │  
+│  └─__pycache__
+│          echo.cpython-310.pyc
+│          echo.cpython-311.pyc
+│          
+├─template
+│      favicon.ico
+│      hello.html
+│      index.html
+│        
+├─网络编程
+│      01-server.py
+│      02-client.py
+│      03-echo-server.py
+│      04-echo-client.py
+│      05-UDP-server.py
+│      06-UDP-client.py
+│      07-broadcast-client.py
+│      08-broadcast-server.py
+│      09-http-server.py
+│      10-http-lib-server.py
+│      11-dynamic-request.py #这个是本文件
+</code></pre>
+<p>其中的/packages/echo.py文件内容如下：</p>
+<pre><code class="language-python">def service(text):
+    if text:
+        response = f'&lt;head&gt;&lt;title&gt;Cyanine\'s Http Server&lt;/title&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;参数信息：{text}&lt;/h1&gt;&lt;/body&gt;'
+        return response
+    else:
+        return '&lt;h1&gt;没有参数信息&lt;/h1&gt;'
+</code></pre>
+<p>需要注意的：<br>
+一在<code>packages</code>文件夹下一定要有<code>__init.py__</code>文件，这样才能在<code>__import__</code>的时候正确识别到模块，同时也需要提前设定默认的模块路径（<code>sys.path.append(path/to/module)</code>）；二响应的时候除了需要确定响应头，在响应的html代码中需要规定编码方式，否则会出现乱码（<code>&lt;meta charset=utf-8&gt;</code>)；三动态处理我刚听起来高大上，但实际上操作一遍，感受就是对url的解析，加上一些程序处理参数，就是动态处理；四动态处理url需要用到很多对字符串的操作。<br>
+PS. 另外一个方便的小tips，在写项目结构的时候，命令行里使用<code>tree</code>会生成目录结构，<code>tree &gt; txtname.txt</code>会将目录输出到这个txt文件中，参数<code>/f</code>会显示所有的文件层级，不加参数只会显示到所有的目录层级。</p>
+<h1 id="-4">=&gt;</h1>
+<p>urllib3模块<br>
+用这个模块可以实现浏览器的模拟访问，是urllib的升级版，两者功能类似，只有细微差别。</p>
+<h1 id="-5">=&gt;</h1>
+<p>Twisted模块 (类似java中nio)<br>
+是python中专门实现异步处理的io概念，主要是提升服务端的数据处理能力。理解twisted的设计思想，那么需要对比传统的服务器程序开发。早期没有多核CPU概念，单线程处理的效率低下，多线程并发编程有可能产生死锁问题（不同进程以及线程之间的等待和唤醒机制）（因为都是一个一个进程去执行）。所以后来，如果不使用并发编程，就不会产生种种问题（资源切换、系统调度、同步与等待等），</p>
+<blockquote>
+<p>阻塞设计<br>
+服务端与客户端的recv<br>
+会浪费大量服务器资源 -&gt; 这就是阻塞IO</p>
+</blockquote>
+<p>多线程是不能解决阻塞IO的，因此最好的方法是非阻塞IO（分为同步非阻塞IO和异步非阻塞IO），因此实现下来就是在一个进程中不断地进行循环处理<br>
+-&gt; twisted是一个事件驱动型的网络引擎，最大的特点就是提供有一个事件循环处理，当外部事件发生时，使用回调机制来触发相应的操作处理，多个任务在一个线程中执行的时候，这种方式可以使程序尽可能地减少对其它线程的以来，也使得程序开发人员不再关注线程安全问题。<br>
+-&gt; twisted中的所有处理事件全部交给reactor进行统一管理。<br>
+-&gt; reactor 进行所有输出输出有关的事件注册。在整个程序的运行中，reactor循环会以单线程的形式持续运行，当需要执行回调处理的时候会停止循环，当回调操作执行完毕之后将继续采用循环的形式进行其他任务处理。</p>
+<h1 id="-6">=&gt;</h1>
+<p>使用twisted开发TCP程序<br>
+会使服务端的资源利用带来极大便利。</p>
+<ol>
+<li>服务端：</li>
+</ol>
+<pre><code class="language-python">import twisted
+import twisted.internet.protocol
+import twisted.internet.reactor
+
+SERVER_PORT = 8080
+
+class Server(twisted.internet.protocol.Protocol): #继承父类
+    def connectionMade(self): #复写服务端连接方法
+        print(f'客户端{self.transport.getPeer().host}连接成功...')
+        return super().connectionMade() 
+    def dataReceived(self, data: bytes): #复写服务端数据接收方法
+        print('【服务端收到数据】' + data.decode('utf-8')) #处理操作
+        self.transport.write(('【ECHO】' + data.decode('utf-8')).encode('UTF-8')) #进行回应 类比socket的send
+        return super().dataReceived(data)
+
+#注册reactor
+#reactor根据工厂获得相应事件回调处理类
+class DefaultServerFactory(twisted.internet.protocol.Factory):
+    protocol = Server
+
+def main():
+    #服务监听
+    twisted.internet.reactor.listenTCP(SERVER_PORT,DefaultServerFactory())
+    print('服务器启动完毕，等待客户端连接...')
+    twisted.internet.reactor.run()
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<ol start="2">
+<li>客户端</li>
+</ol>
+<pre><code class="language-python">import twisted
+import twisted.internet.protocol
+import twisted.internet.reactor
+
+SERVER_PORT = 8080
+SERVER_HOST = 'localhost'
+
+class Client(twisted.internet.protocol.Protocol):
+    def connectionMade(self):
+        print('服务器连接成功...')
+        self.send() #建立连接之后就发送数据
+        return super().connectionMade()
+    
+    def send(self): #自定义发送的方式
+        input_data = input('请输入发送的数据:')
+        if input_data:
+            self.transport.write(input_data.encode('utf-8'))
+        else:
+            self.transport.loseConnection() #如果没有数据发送就关闭连接
+    def dataReceived(self, data: bytes): #接收服务端的数据
+        print(data.decode('utf-8'))
+        self.send() #进行下一次数据发送
+        return super().dataReceived(data)
+    
+class DefaultClientfactory(twisted.internet.protocol.ClientFactory):
+    protocol = Client
+    #如果连接断开 就停止reactor的循环
+    clientConnectLost = clientCOnnectionFailed = lambda self, connector,reason : twisted.internet.reactor.stop()
+
+def main():
+    twisted.internet.reactor.connectTCP(SERVER_HOST,SERVER_PORT,DefaultClientfactory()) #服务监听
+    twisted.internet.reactor.run() #启动reactor循环
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>整个框架还是处于一个模糊状态，但是对twisted的事件轮询机制还是有了一点清楚的认知。<br>
+我的理解:</p>
+<blockquote>
+<p>将数据的处理和数据的接收发送、服务器的连接这两个部分剥离开。在reactor中如果接收到一个信息，那么就会调用到twisted循环中的某个处理程序，然后处理完成之后将数据返回给reactor进行发送，然后twisted事件就会继续循环。相当于将一个socket进程中的accept()阻塞和实际的处理剥离开，让处理程序不受到阻塞程序的影响，因此可以在一个进程中高效的处理多个客户端的连接，节省了服务器的资源。<br>
+（有点像两个圈，reactor一个圈，twisted一个圈，当遇到数据需要处理的时候两个圈就会连一条线，处理完之后就把线擦去）</p>
+</blockquote>
+<h1 id="-7">=&gt;</h1>
+<p>暂时先到这里，后面还有twisted的UDP客户端开发以及deferred的概念。 -- 2023-06-26</p>
+<p>deferred</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[python网络编程 -- 建立一个http服务器+twisted模块--part.1]]></title>
+        <id>http://localhost:4000/post/python-wang-luo-bian-cheng/</id>
+        <link href="http://localhost:4000/post/python-wang-luo-bian-cheng/">
+        </link>
+        <updated>2023-06-20T03:26:07.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="">=&gt;</h1>
+<p>B/S和C/S架构、 后者使用TCP协议，前者使用HTTP协议（HTTP是对TCP的扩充）。<br>
+所有的网络通讯都必须经过OSI（七层架构） -- 七层架构详解 =&gt; TCP/IP 四层架构 、五层架构<br>
+但是为了方便程序开发，socket便出现了，他包装了七层架构中对数据的处理 ，让开发只专注于上层，而不用去为了数据传输和接收为每一个架构的数据处理费心。socket是对各种网络协议的抽象实现。不同语言为了方便开发，都会对网络协议进行包装，因此socket是一个通用的概念。</p>
+<h1 id="-2">=&gt;</h1>
+<p>socket是不同进程之间的通讯，这意味着不仅能进行客户机和服务器之间，同一台主机之间的不同进程也可以通过socket进行交流。<br>
+socket主要是对TCP/IP协议和UDP协议的包装：<br>
+TCP/IP : 有状态、三次握手、四次挥手、性能较低资源占用大；<br>
+UDP ： 无状态、没有握手与挥手、不保存单个结点连接信息、适合广播操作<br>
+总  -&gt; 不管是TCP还是UDP，都是对传输层的保证，数据都会通过七层架构进行处理，最后经过物理层发出。socket的存在包装了传输层，因此现在程序员开发的时候就只需要关注核心带吧，不需要在注意具体的操作协议。</p>
+<h1 id="-3">=&gt;</h1>
+<p>TCP通讯，C/S架构</p>
+<ol>
+<li>服务器端socket程序</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost' #服务器端
+SERVER_PORT = 7000 #本程序端口
+
+def main():
+    with socket.socket() as  server_socket:
+        server_socket.bind((SERVER_HOST,SERVER_PORT)) #绑定本机端口
+        server_socket.listen() #开启监听  
+        print(f'服务器启动完毕，在{SERVER_PORT}端口监听，等待客户端链接...')
+        #进入阻塞 直到客户端进行链接后解除
+        client_conn,address = server_socket.accept() #进入阻塞状态、
+        with client_conn:
+            print(f'客户端已连接到服务端，主机地址是{address[0]}，端口是{address[1]}')
+            client_conn.send(&quot;请求已经收到，测试成功！&quot;.encode('UTF-8'))
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<ol start="2">
+<li>使用telnet命令测试<br>
+windows需要在设置里配置telnet，他是操作系统中提供的一个测试命令。<br>
+<code>telnet localhost 7000</code></li>
+<li>客户端socket程序</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = '127.0.0.1' #服务器主机名称/ip地址
+SERVER_PORT = 7000 #服务器链接端口
+
+def main():
+    with socket.socket() as client_socket: #建立客户端socket
+        client_socket.connect((SERVER_HOST,SERVER_PORT))
+        print(f'服务器返回数据 -- {client_socket.recv(40).decode(&quot;UTF-8&quot;)}')
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<h1 id="-4">=&gt;</h1>
+<p>echo程序模型</p>
+<ol>
+<li>echo服务端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+coding = ['utf-8','gbk']
+def echo_server():
+    with socket.socket() as server_socket:
+        server_socket.bind((SERVER_HOST,SERVER_PORT)) #bind()函数传入元组
+        server_socket.listen()  #监听端口
+        print('服务端已启动，等待客户端链接...')
+        socket_conn,addr = server_socket.accept() #等待接收 进入阻塞
+        with socket_conn: #在接收到的信息前添加【Echo】然后返回 
+            #连接上了之后才while循环 不断进行通讯 
+            #第一次连接成功发送一次提示
+            socket_conn.send('【Echo】连接成功，输入字符发送请求，输入byebye结束链接。'.encode('utf-8'))
+            while True:
+                response = socket_conn.recv(100).decode(coding[0])
+                if response.upper() == &quot;BYEBYE&quot;:
+                    print('客户端发送终止指令，连接结束...')
+                    socket_conn.send('byebye'.encode(coding[0]))
+                    break
+                else:
+                    socket_conn.send(f'【Echo】{response}'.encode(coding[0]))
+if __name__ == '__main__':
+    echo_server()
+</code></pre>
+<blockquote>
+<p>这里需要注意的有两点（我犯的错😣），一是<code>with as</code>的时候需要注意命名不要起冲突；二是再注意while的位置，连接成功后再while才能实现不断地通讯，而不是在连接之前就不断地while。<br>
+这里省略telnet测试。</p>
+</blockquote>
+<ol start="2">
+<li>echo客户端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+def echo_client():
+    with socket.socket() as client:
+        client.connect((SERVER_HOST,SERVER_PORT))
+        #连接成功之后进行通讯
+        while True:
+            response = client.recv(100).decode('utf-8')
+            if response.upper() == 'BYEBYE':
+                print('链接结束...')
+                break
+            else:
+                print(response)
+                text = input()
+                client.send(text.encode('utf-8'))
+if __name__ == '__main__':
+    echo_client()
+</code></pre>
+<blockquote>
+<p>需要注意，一个服务只能绑定一个端，如果程序端口被占用，那么就无法正常启动。</p>
+</blockquote>
+<p>此时的程序已经实现了一个socket通讯，并且是基于TCP协议的，但是有一个重大问题：采用的是单进程的处理模型完成的通讯。这就意味着，如果当前服务端已经有一个客户端进行链接，那么另一个客户端链接的话就会因为主进程被占用而导致无法操作。因此提高性能就需要进行多进程优化。同时，当前服务端程序还会在客户端断开连接之后停止运行，这还意味着后一个服务端并不会像队列一样依次接收客户端，而是在第一个客户端完成连接之后关闭服务，导致后面的客户端失去连接。<br>
+3. 修改服务端程序，采用多进程 （多并发编程）</p>
+<pre><code class="language-python">import socket,multiprocessing #引入多进程处理
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+coding = ['utf-8','gbk']
+def echo_handle(socket_conn,addr):
+   with socket_conn: #在接收到的信息前添加【Echo】然后返回 
+       #连接上了之后才while循环 不断进行通讯 
+       #第一次连接成功发送一次提示
+       socket_conn.send('【Echo】连接成功，输入字符发送请求，输入byebye结束链接。'.encode('utf-8'))
+       while True:
+           response = socket_conn.recv(100).decode(coding[0])
+           if response.upper() == &quot;BYEBYE&quot;:
+               print(f'客户端-{addr[1]}发送终止指令，连接结束...')
+               socket_conn.send('byebye'.encode(coding[0]))
+               break
+           else:
+               socket_conn.send(f'【Echo】{response}'.encode(coding[0]))
+def echo_server():
+   with socket.socket() as server_socket:
+       server_socket.bind((SERVER_HOST,SERVER_PORT)) #bind()函数传入元组
+       server_socket.listen()  #监听端口
+       print('服务端已启动，等待客户端链接...')
+       while True:
+           socket_conn,addr = server_socket.accept() #等待接收 进入阻塞 因此在没有接收到客户端请求的时候while会停止在这里 接收到一个循环一次
+           process = multiprocessing.Process(target=echo_handle,args=(socket_conn,addr),name=f'客户端进程-{addr[1]}')
+           process.start() #启动进程
+
+if __name__ == '__main__':
+   echo_server()            
+</code></pre>
+<p>PS.高并发 -&gt; 处理好服务端的处理效率。<br>
+这里需要注意的是：一需要导入<code>multiprocessing</code>模块处理多进程；二需要将处理函数单独剥离出去，然后根据每一个请求创建一个进程响应；三<code>multiprocessing.Process</code>实例化参数中<code>target</code>表示目标函数，<code>args</code>表示传入进函数的参数，<code>name</code>表示进程的名字。四还需要注意的是，在进入<code>accept</code>的时候，主进程会进入阻塞，这意味着外边的while循环会暂停在<code>accept()</code>这里，直到接受到后才进行下一个循环，也就是进入下一个阻塞等待，这也解决了修改之前服务端会在一个客户端终止连接之后结束服务，他会一直运行。</p>
+<p>#=&gt;<br>
+UDP通讯<br>
+相对于TCP是一种不安全连接，但是想能相对较好。在python使用中差别不大，只需要在引用socket中指定对应参数，同时也不需要监听、接收修改为recvfrom()、发送修改为sendto()。</p>
+<ol>
+<li>UDP服务端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+
+def main():
+    #socket.AF_INET表示使用ipv4网络协议进行服务端创建
+    #socket.SOCK_DGRAM 创建一个数据报（UDP) 协议的网络端
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM)  as udp_server:
+        udp_server.bind((SERVER_HOST,SERVER_PORT)) #bind()函数传入元组
+        print(f'服务器启动完成，监听端口{SERVER_PORT}')
+        while True: #服务端响应就是在收到的信息前面添加【Echo】
+            data,addr = udp_server.recvfrom(100) #不断接收客户端信息
+            print(f'【服务器】客户端{addr[0]}:{addr[1]}成功连接！')
+            echo_data = f'【Echo】{data.decode(&quot;utf-8&quot;)}'.encode('utf-8')
+            udp_server.sendto(echo_data,addr) #将内容相应给接收到信息的对应的客户端
+if __name__ =='__main__':
+    main()
+</code></pre>
+<ol start="2">
+<li>UDP客户端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+
+#UDP客户端与TCP客户端的不同就在于 一是协议不同 二是不需要进行连接 只需要不断地发送接收即可
+def echo_udp_client():
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as client:
+        while True:
+            send_data = input('请输入想发送的数据...\n')
+            if send_data:
+                client.sendto(send_data.encode('utf-8'),(SERVER_HOST,SERVER_PORT))
+                data,addr = client.recvfrom(100) #recvfrom会接受一个元组 包含两个元素data和主机地址 而主机地址又是一个元组 包含主机地址和端口两个元素
+                print(data.decode('utf-8'))
+            else: #如果输入内容为空 那么程序结束
+                break
+
+if __name__ == '__main__':
+    echo_udp_client()
+</code></pre>
+<ol start="3">
+<li>send/sendto, recv/recvfrom区别<br>
+PS. 1. UDP不需要建立稳定的链接 ，不受到连接的控制，不需要考虑多连接（不需要考虑并发），需要不断的接收，但只需要将响应的信息原路返回给对应的客户端即可。2. UDP是一种无连接协议，因此不能使用<code>telnet</code>命令进行连接测试。</li>
+</ol>
+<h1 id="-5">=&gt;</h1>
+<p>UDP广播</p>
+<ol>
+<li>UDP广播接收端</li>
+</ol>
+<pre><code class="language-python">import socket
+BROASTCAT_CLIENT_ADDR = ('0.0.0.0',21567) #客户端绑定地址
+
+def mian():
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as client: #这里不变
+        #设置广播模式
+        client.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
+        client.bind(BROASTCAT_CLIENT_ADDR) #绑定广播客户端的地址
+        while True:
+            message,addr = client.recvfrom(100)
+            print(f'接收到的广播客户端数据：【{message.decode(&quot;utf-8&quot;)}】,广播来源为{addr[0]}:{addr[1]}')
+
+if __name__ == '__main__':
+    mian()
+</code></pre>
+<ol start="2">
+<li>UDP广播发送端(服务端)</li>
+</ol>
+<pre><code class="language-python">import socket
+BROASTCAT_SERVER_ADDR = ('&lt;broadcast&gt;',21567) #广播地址 
+
+def main():
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as server_socket: #这里不变 设置UDP编码
+        #设置广播模式
+        server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
+        server_socket.sendto(f'这是一条来自服务端的广播...'.encode('utf-8'),BROASTCAT_SERVER_ADDR)
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<ol start="3">
+<li>需要注意的点/具体解释<br>
+关键的函数配置项：</li>
+</ol>
+<blockquote>
+<p>setsockopt(self,level:int,optname:int.value:Union[int,bytes])<br>
+level: 设置选项所在的协议层编号，有四个可用配置项<br>
+socket.SOL_SOCKET 基本嵌套字接口<br>
+socket.IPPROTO_IP ipv4嵌套字接口<br>
+socket.IPPROTO_IPV6 ipv6嵌套字接口<br>
+socket.IPPRPTP_TCP TCP嵌套字接口<br>
+optname : 设置选项名称，例如，如果要进行广播则可以使用“socket.BROADCA“;<br>
+value: 设置选项的具体内容</p>
+</blockquote>
+<p>为什么要设置广播的端口呢？</p>
+<blockquote>
+<p>&quot;广播有一个广播组，即只有一个广播组内的节点才能收到发往这个广播组的信息。什么决定了一个广播组呢，就是端口号，局域网内一个节点，如果设置了广播属性并监听了端口号A后，那么他就加入了A组广播，这个局域网内所有发往广播端口A的信息他都收的到。在广播的实现中，如果一个节点想接受A组广播信息，那么就要先将他绑定给地址和端口A，然后设置这个socket的属性为广播属性。&quot;<br>
+<a href="https://blog.csdn.net/leonwei/article/details/6202976">reference</a></p>
+</blockquote>
+<p>可以理解为，服务端向同一个局域网内的所有设备的这个端口号发送消息，然后只有接收端设置为广播模式并绑定这个端口之后，才能接收到客户端向着个端口发送的消息；而所有的局域网内的这个端口的设备就组成了一个广播组。具体设置来说，服务端需要设置这个广播组的端口和广播模式：</p>
+<pre><code class="language-python">BROASTCAT_SERVER_ADDR = ('&lt;broadcast&gt;',21567) #广播地址 
+......
+server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1) #设置广播模式 
+server_socket.sendto(f'这是一条来自服务端的广播...'.encode('utf-8'),BROASTCAT_SERVER_ADDR) #发送到广播组的这个端口
+</code></pre>
+<p>而客户端需要设置广播来源的地址和广播发送的端口即可：</p>
+<pre><code class="language-python">BROASTCAT_CLIENT_ADDR = ('0.0.0.0',21567) #客户端绑定地址
+......
+client.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1) #
+client.bind(BROASTCAT_CLIENT_ADDR) #绑定广播客户端的地址
+</code></pre>
+<p>广播接收端不一定能接收到广播，但是只要打开接收端就可以接收到广播；客户端执行之后就会一直等待服务端发送的消息。</p>
+<h1 id="-6">=&gt;</h1>
+<p>HTTP协议/HTTP服务器<br>
+传统socket需要提供两个程序端（服务端、客户端），因此每一次服务端升级都需要进行客户端强制更新。因此在传统网络编程的基础上就实现了HTTP协议（HTTP是对TCP协议的一种更高级的包装），但是并没有完全脱离传统的TCP协议，是在TCP协议前面添加的头部信息。<br>
+HTTP - 超文本传输协议 是对B/S架构的标准协议<br>
+B/S相对于C/S的好处就是不用在开发一套客户端<br>
+在整个http开发流程中，最重要的设计就是html代码的开发。但对于web服务器开发而言，最重要的是清楚http服务器的开发。<br>
+在整个http请求和响应的处理过程中，关键问题就在于请求和响应的头部信息有哪些、响应状态码。<br>
+HTTP协议中，设计了多种请求模式，主要有get、post。<br>
+http头部信息：<br>
+http状态码：1**、2**、3**、4**、<br>
+常见响应头信息</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[scrapy爬虫框架深入理解 -- 未整理完]]></title>
+        <id>http://localhost:4000/post/scrapy-pa-chong-kuang-jia-geng-shen-ru-li-jie-yi-ji-shi-yong/</id>
+        <link href="http://localhost:4000/post/scrapy-pa-chong-kuang-jia-geng-shen-ru-li-jie-yi-ji-shi-yong/">
+        </link>
+        <updated>2023-06-17T08:41:17.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="1-logging模块">1. logging模块</h2>
+<h2 id="2-环境变量setting">2. 环境变量（setting）</h2>
+<p><a href="https://doc.scrapy.org/en/latest/topics/settings.html#topics-settings">官方文档</a></p>
+<h3 id="21-如何设置并访问setting">2.1 如何设置并访问setting</h3>
+<h4 id="211-在spider中">2.1.1 在spider中</h4>
+<p>spider中，setting是一个继承scrapy.Spider的一个实例属性，可以通过self.setting访问对应在setting.py中的环境变量。</p>
+<pre><code class="language-python">#在setting.py文件中
+MONGO_URI=' 对应的URI'
+</code></pre>
+<pre><code class="language-python">#在spider中调用
+class ExampleSpider(scrapy.Spider):
+    ...#省略
+    def parse(self, response):
+        mongodb = self.settings['MONGO_URI']
+        logging.log(logging.INFO,mongodb)
+    #会在日志中输出
+    #2023-06-17 16:44:04 [root] INFO: 对应的URI
+</code></pre>
+<p>scrapy同样支持为每一个Spider设置不同的环境变量，以避免所有环境变量都挤在一个setting.py文件中造成臃肿。在每一个spider实例中都有一个继承来的custom_settings属性可以修改，它是一个字典类型，所有单独的环境变量都可以在这里声明，包括cookies, header, 以及其他可以写在setting.py文件中的变量。声明方法跟Spider的name属性相同。调用则通过self.custom_settings使用在方法中。</p>
+<h4 id="212-在pipeline等其他组件中">2.1.2 在pipeline等其他组件中</h4>
+<p>使用类方法from_crawler()可以访问到<br>
+<a href="https://docs.scrapy.org/en/latest/topics/settings.html#how-to-access-settings">官方文档参考</a></p>
+<blockquote>
+<p>“<strong>Settings can be accessed through the scrapy.crawler.Crawler.settings attribute of the Crawler that is passed to from_crawler method in extensions, middlewares and item pipelines</strong>”</p>
+</blockquote>
+<p>示例代码：</p>
+<pre><code class="language-python">class MyExtension:
+    def __init__(self, log_is_enabled=False):
+        if log_is_enabled:
+            print(&quot;log is enabled!&quot;)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        settings = crawler.settings
+        return cls(settings.getbool(&quot;LOG_ENABLED&quot;))
+</code></pre>
+<p>在<code>from_crawler()</code>方法中的setting对象是一个类字典对象，因此可以用字典的方式访问环境变量(例如：<code>e.g., settings['LOG_ENABLED']</code>)，但是为了避免可能的类型错误（比如调用需要int类型，但是环境变量中是str类型，直接使用key访问就可能返回int类型造成错误），更推荐使用setting对象的api。</p>
+<blockquote>
+<p><a href="https://docs.scrapy.org/en/latest/topics/api.html#scrapy.settings.Settings">官方文档中setting对象的api</a><br>
+包括<code>get()</code>,<code>getbool()</code>, <code>getdict()</code>, <code>getdictorlist()</code>, <code>getfloat()</code>,  <code>getint()</code>,  <code>getlist()</code>等，用途也能从方法名显而易见出，具体请参考官方链接。</p>
+</blockquote>
+<h2 id="1-crawler模块">1. crawler模块</h2>
+<h2 id="2-item源码如何实现存储key字段">2. item源码如何实现存储key字段,</h2>
+<p>https://www.cnblogs.com/twelfthing/articles/4709287.html<br>
+https://www.cnblogs.com/fengf233/p/11298623.html#2.field()%E7%B1%BB</p>
+<h2 id="5-多个spider以及多个pipeline对应的设置">5. 多个Spider以及多个Pipeline对应的设置</h2>
+<p>https://www.ziji.work/python/scrapy-many-spider-pipeline.html#SCRAPYSPIDER-4</p>
+<h2 id="6-大佬的源码解析">6. 大佬的源码解析</h2>
+<p>虽然现在基本看不懂（×<br>
+http://kaito-kidd.com/2016/11/09/scrapy-code-analyze-entrance/</p>
+<h2 id="7-访问setting">7. 访问setting</h2>
+<h2 id="8-为什么from_crawler方法需要设置为类方法">8. 为什么from_crawler方法需要设置为类方法？</h2>
+<p><a href="https://www.keepnight.com/archives/1126/">提点链接</a><br>
+最后这篇博客的最后一句话简直一下子给我点透了，虽然之前专门去查了<code>@classmethod</code>、factory method这些东西，但为什么这么做还是很混乱。</p>
+<blockquote>
+<p><strong>大概就是检测spider类有没有from_crawler，有的话就return一个cls()的实例化对象，产生实例化对象后会自动调__init__方法。</strong></p>
+</blockquote>
+<p>结合官方文档的<a href="https://docs.scrapy.org/en/latest/topics/api.html?highlight=crawler#scrapy.crawler.CrawlerRunner.create_crawler">Crawler API</a>、<a href="https://docs.scrapy.org/en/latest/topics/item-pipeline.html#from_crawler">pipeline中from_crawler()方法</a>、<a href="https://docs.scrapy.org/en/latest/topics/spiders.html?highlight=crawler#scrapy.Spider.from_crawler">Spider中from_crawler()方法</a>，以及<a href="http://kaito-kidd.com/2016/11/09/scrapy-code-analyze-entrance/">大佬对scrapy源码的解析</a>才有一种突然醒悟的感觉。</p>
+<blockquote>
+<p>PS. 这里我一直犯了一个概念上的错误，我一直以为示例代码中<code>from_crawler(cls, cralwer)</code> 的crawler是类的属性参数（我误认为是有点像构造方法中的参数，被我搞混了😣），是一个定义在当前类里面的一个继承过来的属性，因此花了很多时间去查这个<code>crawler</code>在scrapy中的作用。但是实际上它只是一个函数的形参，它本身不带有任何意义（就像是定义函数的时候括号里的a,b,c,d等参数一样）。然后又因为crawler在scrapy又是一个关键对象，所以查了很久都没有结果。<br>
+直到我看到了上面那篇提点链接的博客，这才想通了。</p>
+</blockquote>
+<p>从我的理解来说 ：<br>
+第一步，在运行这个爬虫之前，scrapy会为运行做一些准备，其中就包括判断pipeline， spider, 还有其他一些组件中的<code>from_crawler()</code>方法是否被重写，这个判断就需要在类没有实例化之前调用，所以<code>from_crawler()</code>被定义为类方法。<br>
+第二步，之后根据具体的类，在从Crawler这个对象中实例化一个对应的from_crawler方法。<br>
+上面这句话有两点需要着重理解。</p>
+<ol>
+<li>第一点，这也就是<code>from_crawler()</code>是一个“factory method”，scrapy会根据不同的对象为类赋予不同的<code>from_crawler()</code>方法。在我的理解中，就是有一个类，专门负责为其他不同的类赋予不同的<code>from_crawler()</code>方法，也就是<strong>类方法的类</strong>。</li>
+<li>第二点，scrapy从Crawler<code>创建from_crawler()</code>的含义就是为这个方法传入一个<code>scrapy.crawler.Crawler</code>对象，而这个对象又是由scrapy通过一个<code>Spider子类</code>和<code>scrapy.settings.Settings </code>对象实例化而来。</li>
+</ol>
+<blockquote>
+<p><a href="https://docs.scrapy.org/en/latest/topics/api.html#scrapy.crawler.Crawler">官方文档</a><br>
+<strong><code>classscrapy.crawler.Crawler(spidercls, settings)</code></strong><br>
+<strong>The Crawler object must be instantiated with a scrapy.Spider subclass and a scrapy.settings.Settings object.</strong></p>
+</blockquote>
+<p>因此，在Crawler对象中就有能过获取setting的API，这个API和2.1.2中的setting对象的一模一样（因为本来就是一个东西👏，都是setting对象，这里就有串起来的感觉了）</p>
+<h3 id="9-设置cookies">9. 设置cookies</h3>
+<p><a href="https://zhuanlan.zhihu.com/p/337212121">知乎参考</a>但是没有讲原理</p>
+<h3 id="10-关闭scrapy日志">10. 关闭scrapy日志</h3>
+<p><a href="https://www.qiniu.com/qfans/qnso-33203620">参考</a><br>
+<a href="https://coding.imooc.com/learn/questiondetail/133488.html">解决方法</a></p>
+<p>添加twisted定时器 以及 输出调用日志<br>
+https://www.jianshu.com/p/5a5cdd7f2bfb</p>
+<h3 id="11-定时调度scrapy">11. 定时调度scrapy</h3>
+<p>https://blog.csdn.net/python36/article/details/82683528</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[scrapy item赋值/填充 细节注意]]></title>
+        <id>http://localhost:4000/post/scrapy-item-fu-zhi-tian-chong-xi-jie-zhu-yi/</id>
+        <link href="http://localhost:4000/post/scrapy-item-fu-zhi-tian-chong-xi-jie-zhu-yi/">
+        </link>
+        <updated>2023-06-16T07:29:41.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="1-起因">1.  起因</h2>
+<p>我在爬取到微博热搜的json数据之后，发无论如何都会报错数据库字段方面的问题，具体报错如下：</p>
+<pre><code>Traceback (most recent call last):
+  File &quot;D:\anaconda\envs\DjangoEnv\Lib\site-packages\twisted\internet\defer.py&quot;, line 892, in _runCallbacks
+    current.result = callback(  # type: ignore[misc]
+  File &quot;D:\anaconda\envs\DjangoEnv\Lib\site-packages\scrapy\utils\defer.py&quot;, line 307, in f
+    return deferred_from_coro(coro_f(*coro_args, **coro_kwargs))
+  File &quot;D:\Aproject\django-project\project5-scrapy-tutorial\project_2\tutorial\tutorial\pipelines.py&quot;, line 46, in process_item    
+    self.db[collection_name].insert_one(dict(hot))
+ValueError: dictionary update sequence element #0 has length 1; 2 is required
+</code></pre>
+<p>具体的原因一直不清楚，只能模糊的猜测实在向数据库导入数据的时候，因为格式的原因出错了，但具体是什么原因，我把代码看了一遍又一遍怎么也找不出来哪里错了。猜测可能是爬取的json数据解析错误，所以将json数据下载到文件中，然后在jupyter中不断调试不断找，看看我是把那个括号给漏了😡。<br>
+最后实在是找不到了，想着是不是可以通过调试一步一步的判断哪里出错了，但是我没有在scrapy的文档中找到关于pipeline的调试方法（只有关于spider的），最后在知乎上一篇文章找到了方法，<a href="https://zhuanlan.zhihu.com/p/25200262">参考链接</a>，但是作者的方法在我（windows11+vsc）运行之后会报错，之后参考了评论区的方法，在和<code>scrapy.cfg</code>同一层（项目根目录中）中建立<code>run.py</code>文件，输入以下代码，再在项目中设置断点，然后debug文件<code>run.py</code>，就可以实现调试的功能。</p>
+<blockquote>
+<p>具体代码：</p>
+</blockquote>
+<pre><code class="language-python">import os
+from scrapy.cmdline import execute
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+try:
+    execute(
+    [
+    'scrapy',
+    'crawl',
+    'weibo', #这里换成对应的spider名字
+    '-o',
+    'out.json',
+    ]
+    )
+except SystemExit:
+    pass    
+</code></pre>
+<h2 id="2-调试之后">2.  调试之后</h2>
+<p>在调试之后，我发现<code>pipeline.py</code>文件中对应class类中的<code>process_item()</code>方法中的<code>item</code>变量并不是我想象中的是一个由字典元素组成的列表，而是一个字典，并且key是在<code>item.py</code>文件中设定的，value是在<code>parse()</code>方法中赋值的、我想要的字典元素列表。终于确定的原因，因此修改也很简单。</p>
+<h2 id="3-修改">3. 修改</h2>
+<p>将原本的<code>process_item()</code>方法修改即可</p>
+<pre><code class="language-python">def process_item(self,item,spider):
+    now = datetime.datetime.now() #以当前事件作为collection的名字
+    collection_name = datetime.datetime.strftime(now,'%Y-%m-%d:%H:%M:%S')
+
+    #原来错误的： 
+    #for hot in item:  -&gt;修改为下面的部分
+    for hot in item['realtime']: 
+        self.db[collection_name].insert_one(dict(hot))
+    return item
+</code></pre>
+<h2 id="4-探究原因">4. 探究原因</h2>
+<p><a href="https://docs.scrapy.org/en/latest/topics/items.html#item-types">官方文档</a><br>
+首先，开发者为了方便在python中处理爬到的web数据，因此将item类设计为类字典结构，并且完全copy了python中dict的api（cv大法好😋）</p>
+<blockquote>
+<p><strong>Item objects replicate the standard dict API, including its __init__ method.</strong></p>
+</blockquote>
+<p>因此实际上，item类就是一个在scrapy中的spider, pipeline之间进行数据交换的字典类。他的流程就是：<br>
+第一步，在<code>item.py</code>文件中设定item的key值；<br>
+第二部，在spider中的<code>parse</code>方法中被解析好的网页数据填充value;<br>
+第三步，通过pipeline保存成为文件/保存到数据库等</p>
+<p>详细的例子如下：<br>
+4.1 在items.py中规定一个类，如下：</p>
+<pre><code class="language-python">class Example(scrapy.Item): #必须继承scrapy.Item 才能使用对应的api
+    realtime = scrapy.Field() 
+</code></pre>
+<blockquote>
+<p>这里的Field()的作用<br>
+PS.<a href="https://docs.scrapy.org/en/latest/topics/items.html#scrapy.item.scrapy.Field">官方文档</a><br>
+&quot; The Field class is just an alias to the built-in dict class and doesn’t provide any extra functionality or attributes.&quot; 表明Field类之际上只是python内置字典的别名，没有其他任何别的作用（<a href="https://www.cnblogs.com/fengf233/p/11298623.html#2.field()%E7%B1%BB">Field()源码解析</a>），当然复杂的而是item如何（说实话没看懂😵<a href="https://www.cnblogs.com/twelfthing/articles/4709287.html">item源码解析</a>）。<br>
+当然也可以重写<code>Overriding the serialize_field() method</code>方法，去规定具体的数据类型（<a href="https://docs.scrapy.org/en/latest/topics/exporters.html#overriding-the-serialize-field-method">具体参考官方文档</a>）<br>
+整个item类的使用非常类似与Django的Form类，不过Field()规定的字段类型是远远简单与Django的。</p>
+</blockquote>
+<p>4.2 然后再spider中我爬取到的是一个json数据，例如</p>
+<pre><code class="language-json">{
+&quot;ok&quot;: 1,
+    &quot;data&quot;: {
+        &quot;realtime&quot;: [
+                {
+                &quot;star_name&quot;: {},
+                &quot;word_scheme&quot;: &quot;#新闻标题#&quot;,
+                &quot;emoticon&quot;: &quot;&quot;,
+            }
+        ]}
+}
+</code></pre>
+<p>4.3 然后我在对item.py文件中的类进行填充，如下：</p>
+<pre><code class="language-python">class ExampleSpider(scrapy.Spider):
+    ...#略
+    def parse(self, response):
+            jsondata = json.loads(response.text)          #使用scrapy中response属性text将爬取到的网页解析为str，然后使用json.loads方法转化为字典格式
+            realtime = jsondata['data']['realtime'] #提取热搜数据列表
+            item = Example() #实例化item
+            item['realtime'] = realtime
+            return item
+</code></pre>
+<p>这里需要重点注意<code> item['realtime'] = realtime</code>，虽然在之前已经将realtime列表提取出来，但是在填充的时候，传入pipeline中进行储存的实际上是一个item字典，字典key是在item.py文件中定义的属性，字典value是在parse方法中填充的对象。所以实际上传入到pipeline模块中的item结构是如下：</p>
+<pre><code class="language-json">{ 
+    'realtime': [{
+        &quot;star_name&quot;: {},
+        &quot;word_scheme&quot;: &quot;#新闻标题#&quot;,
+        &quot;emoticon&quot;: &quot;&quot;,
+    },
+    ]
+}
+</code></pre>
+<p>4.4 也就是意味着，如果你在pipeline.py文件的对应类中的process_item方法中，如果需要用到原本的列表，首先从item字典中提取出来，具体如下：</p>
+<pre><code class="language-python">    def process_item(self,item,spider):
+            #....
+        for hot in item['realtime']:
+            #....
+        return item
+</code></pre>
+]]></content>
+    </entry>
+</feed>

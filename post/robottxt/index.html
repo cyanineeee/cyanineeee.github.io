@@ -1,0 +1,258 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>爬虫遇到robot.txt | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="爬虫遇到robot.txt | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="在做大作业的时候需要爬微博的热搜，用scrapy框架，按照quick start操作，但是示例网址可以爬取，我想要爬取微博的热搜却不可以，在检索问题的时候，看到用python直接爬取却可以。然后仔细查看运行日志，发现了以下两行：
+
+[scr..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              爬虫遇到robot.txt
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-06
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>在做大作业的时候需要爬微博的热搜，用scrapy框架，按照quick start操作，但是示例网址可以爬取，我想要爬取微博的热搜却不可以，在检索问题的时候，看到用python直接爬取却可以。然后仔细查看运行日志，发现了以下两行：</p>
+<blockquote></blockquote>
+<pre><code>[scrapy.core.engine] DEBUG: Crawled (200) &lt;GET https://weibo.com/robots.txt&gt; (referer: None)
+[scrapy.downloadermiddlewares.robotstxt] DEBUG: Forbidden by robots.txt: &lt;GET https://weibo.com/ajax/side/hotSearch&gt;
+</code></pre>
+<p>然后意识到可能是因为这个robot.txt导致的，但是robot.txt到底是什么呢？</p>
+<h2 id="1-简述">1. 简述</h2>
+<p>robot.txt文件是搜索引擎和网站之间做的一个非强制执行的访问限制。robot.txt对按照一定的语法规范，对每个搜索引擎能（例如谷歌、百度等），访问到的内容进行规定。但这种并不是一种强制要求，各种巨头搜索引擎会按照robot.txt文件中的要求访问网站，但是对于个人或者某些组织来讲，可以不遵守robot.txt文件继续访问。</p>
+<h2 id="2-robottxt简要介绍">2. robot.txt简要介绍</h2>
+<p>以<a href="https://weibo.com/robots.txt">微博</a>为例：</p>
+<pre><code class="language-html">Sitemap: http://weibo.com/sitemap.xml
+User-Agent: Baiduspider
+Disallow:
+User-agent: 360Spider
+Disallow:
+User-agent: Googlebot
+Disallow:
+User-agent: *
+Allow: /ads.txt
+User-agent: Sogou web spider
+Disallow:
+User-agent: bingbot
+Disallow:
+User-agent: smspider
+Disallow:
+User-agent: HaosouSpider
+Disallow:
+User-agent: YisouSpider
+Disallow:
+User-agent: *
+Disallow: /
+</code></pre>
+<h3 id="21">2.1</h3>
+<p><code>Sitemap</code>是站点地图，网站通过它向搜索引擎说明网站的重要页面，是由<code>Sitemap:</code>+<code>url</code>组成，一般是有多个，但是微博只列举了一个。</p>
+<h3 id="22">2.2</h3>
+<p><code>User-agent</code>是用户代理，对于正常用户来说，这个包括這包括浏览器类型、系统版本等信息，但是对于爬虫来说，如果是单独写的爬虫，那么一般会提前设定好<code>head</code>（请求头）中的<code>user-agent</code>属性，伪装成一个正常的用户；不过对流搜索引擎爬虫来说，会在这里注明自己的“身份”，例如常见的搜索引擎爬虫代理名称：</p>
+<blockquote>
+<p>Google：<br>
+Googlebot<br>
+Googlebot-Image（用於影像）<br>
+Googlebot-News（用於新聞）<br>
+Googlebot-Video（用於影片）<br>
+Bing<br>
+Bingbot<br>
+MSNBot-Media（用於影像和影片）<br>
+百度<br>
+Baiduspider</p>
+</blockquote>
+<p>当然，如果是<code>User-agent : *</code>，表示所有的代理用户都可以访问。<br>
+因为爬虫读取是按照顺序读取，对于scapy来说，前几个允许的搜索引擎爬虫不包括自己，所以选择遵守最后一个，就是</p>
+<pre><code>User-agent: *
+Disallow: /
+</code></pre>
+<p>因此就“被屏蔽”掉了。</p>
+<h3 id="23">2.3</h3>
+<p><code>Disallow</code>对爬虫机器人声明后面的内容是不允许访问的。<br>
+例如<code>Disallow: /example/bots/</code>表示网站根目录下的example/bots/页面（也就是'https://websiteRoot/example/bots/）不允许访问；<br>
+也可以禁止访问一个目录，例如<code>Disallow: /example/</code>，表示网站目录example（https://websiteRoot/example/）下的所有页面都不允许爬虫访问；<br>
+如果只是一个<code>Disallow: /</code>，那么表示该对机器人隐藏整个网站；<br>
+如果为空，<code>Disallow: </code>，表示爬虫机器人可以访问储存网站内的所有内容。<br>
+不过以上都只是对于善意的爬虫机器人，如果爬虫不遵守这个规则，那么就相当于没有。</p>
+<h3 id="24">2.4</h3>
+<p><code>Allow</code>就是你所想的那个样子，告诉爬虫允许访问的页面。</p>
+<h3 id="25-还有什么">2.5 还有什么？</h3>
+<p><code>Crawl-delay</code>：crawl delay 命令旨在阻止搜索引擎蜘蛛爬虫使使服务器负担过重。它让爬虫管理指定每个爬虫访问的时间间隔（以毫秒为单位）。例如：<code>Crawl-delay: 8</code></p>
+<p>PS. 还注意到微博的文件中由一个ads.txt文件，可以从名字看出该文件和广告业务相关，简而言之，它可以避免广告欺诈行为，让网站所有者可以决定其他哪些公司可以在其的网站上进行广告。【<a href="https://www.wbolt.com/what-is-ads-txt.html">reference</a>】</p>
+<h2 id="3-解决方法">3. 解决方法</h2>
+<p>在scrapy项目中的<code>setting.py</code>文件中找到<code># Obey robots.txt rules</code>下方的设置项修改为<code>False</code>即可。同时也可以在setting文件中的<code># Override the default request headers:</code>设置默认请求头；可以在<code>Crawl responsibly by identifying yourself (and your website) on the user-agent:</code>设置用户代理</p>
+<p><a href="https://www.cloudflare.com/zh-tw/learning/bots/what-is-robots-txt/">reference</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-%E7%AE%80%E8%BF%B0">1. 简述</a></li>
+<li><a href="#2-robottxt%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D">2. robot.txt简要介绍</a>
+<ul>
+<li><a href="#21">2.1</a></li>
+<li><a href="#22">2.2</a></li>
+<li><a href="#23">2.3</a></li>
+<li><a href="#24">2.4</a></li>
+<li><a href="#25-%E8%BF%98%E6%9C%89%E4%BB%80%E4%B9%88">2.5 还有什么？</a></li>
+</ul>
+</li>
+<li><a href="#3-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95">3. 解决方法</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/cc-jie-gou-ti-qian-tao/">
+              <h3 class="post-title">
+                c/c++ 结构体嵌套
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

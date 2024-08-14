@@ -1,0 +1,236 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>requests.post和requests.session.post方法的区别 | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="requests.post和requests.session.post方法的区别 | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1. requests.post()
+调用形式：requests.post(url, data={key: value}, json={key: value}, args)
+args表示还有很多可选参数，例如：
+1.1 file : 一个文..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              requests.post和requests.session.post方法的区别
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-15
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="1-requestspost">1. requests.post()</h2>
+<p>调用形式：<code>requests.post(url, data={key: value}, json={key: value}, args)</code><br>
+<code>args</code>表示还有很多可选参数，例如：</p>
+<h4 id="11-file-一个文件字典列表">1.1 file : 一个文件字典列表</h4>
+<pre><code class="language-python">myfiles = {'file': open('myfirstreact.png' ,'rb')}
+x = requests.post(url, files = myfiles)
+</code></pre>
+<p>表示向目标链接post一个图片（'rb'表示以二进制格式读取文件）</p>
+<h4 id="12-allow_redirects-表示是否允许网页重定向">1.2 allow_redirects : 表示是否允许网页重定向</h4>
+<p>默认为<code>True</code></p>
+<h4 id="13-cookies-一个字典格式的cookies">1.3 cookies ： 一个字典格式的cookies</h4>
+<pre><code class="language-python">myobj = {'somekey': 'somevalue'}
+x = requests.post(url, data = myobj, cookies = {&quot;favcolor&quot;: &quot;Red&quot;}) #根据目标url的cookies
+</code></pre>
+<h4 id="14-headers-请求头">1.4 headers : 请求头</h4>
+<pre><code class="language-python">x = requests.post(url,data={},headers = {
+    'header_one':'content',
+    'header_two':'content',
+    ...
+})
+</code></pre>
+<h4 id="15-timeout-等待服务器响应的时间">1.5 timeout : 等待服务器响应的时间</h4>
+<p>默认为<code>None</code>，表示一直等待直到服务器响应。<br>
+也可以自定义，如果超出时间表示“在这一次请求中响应超时”。</p>
+<pre><code class="language-python">x = requests.post(url, data = myobj, timeout=0.001)#表示等待0.001秒
+</code></pre>
+<h4 id="15-data和json的区别">1.5 data和json的区别</h4>
+<p>根据不同的url的http请求，需要发送对应的数据，比如有的网站是直接以字典格式发送数据，而有的可能是在前端打包成json格式在发送请求。<br>
+具体需要看请求头中的<code>content-type</code>参数：如果请求头中<code>content-type</code>为<code>application/json</code>, 为json形式，post请求使用json参数。<br>
+如果为<code>application/x-www-form-urlencoded</code>，为表单形式，post请求时使用使用data参数。<br>
+<a href="https://zhuanlan.zhihu.com/p/140372568">reference_1</a></p>
+<h2 id="2-requestssessionpost">2. requests.session.post()</h2>
+<p style="color:DarkBlue;font-weight:bolder" >The Session object allows you to persist certain parameters across requests. It also persists cookies across all requests made from the Session instance, and will use urllib3's  <a href="https://urllib3.readthedocs.io/en/latest/reference/index.html#module-urllib3.connectionpool">connection pooling</a>. So if you’re making several requests to the same host, the underlying TCP connection will be reused, which can result in a significant performance increase (see <<a href="https://en.wikipedia.org/wiki/HTTP_persistent_connection">HTTP persistent connection</a>). </p>
+<p>-- <a href="https://requests.readthedocs.io/en/latest/user/advanced/#request-and-response-objects">reference_2</a></p>
+<p>这段话也就表明，session中的post方法可以维持一个实例中的某些参数，保持会话连接，让你在实例中保存cookies。<br>
+其余的参数和requests.post()相同。<br>
+而且从<a href="https://blog.csdn.net/totorobig/article/details/111083521">reference_3</a>中对源码的分析中也可以看出，requests.post()在调用完成之后，连接池就会被关闭；而requests.session.post()会将链接保存，将cookies保存在同一个实例中。</p>
+<pre><code class="language-python">#官方参考中的示例代码
+s = requests.Session()
+s.get('https://httpbin.org/cookies/set/sessioncookie/123456789')
+r = s.get('https://httpbin.org/cookies')
+print(r.text)
+# '{&quot;cookies&quot;: {&quot;sessioncookie&quot;: &quot;123456789&quot;}}'
+</code></pre>
+<p>表明在r这一个实例中，两次对不同链接的请求的cookies是相同的。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-requestspost">1. requests.post()</a><br>
+*
+<ul>
+<li><a href="#11-file-%E4%B8%80%E4%B8%AA%E6%96%87%E4%BB%B6%E5%AD%97%E5%85%B8%E5%88%97%E8%A1%A8">1.1 file : 一个文件字典列表</a></li>
+<li><a href="#12-allow_redirects-%E8%A1%A8%E7%A4%BA%E6%98%AF%E5%90%A6%E5%85%81%E8%AE%B8%E7%BD%91%E9%A1%B5%E9%87%8D%E5%AE%9A%E5%90%91">1.2 allow_redirects : 表示是否允许网页重定向</a></li>
+<li><a href="#13-cookies-%E4%B8%80%E4%B8%AA%E5%AD%97%E5%85%B8%E6%A0%BC%E5%BC%8F%E7%9A%84cookies">1.3 cookies ： 一个字典格式的cookies</a></li>
+<li><a href="#14-headers-%E8%AF%B7%E6%B1%82%E5%A4%B4">1.4 headers : 请求头</a></li>
+<li><a href="#15-timeout-%E7%AD%89%E5%BE%85%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%93%8D%E5%BA%94%E7%9A%84%E6%97%B6%E9%97%B4">1.5 timeout : 等待服务器响应的时间</a></li>
+<li><a href="#15-data%E5%92%8Cjson%E7%9A%84%E5%8C%BA%E5%88%AB">1.5 data和json的区别</a></li>
+</ul>
+</li>
+<li><a href="#2-requestssessionpost">2. requests.session.post()</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/robottxt/">
+              <h3 class="post-title">
+                爬虫遇到robot.txt
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

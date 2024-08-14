@@ -1,0 +1,246 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Install centos in virtualbox and configure the network Part.1 | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Install centos in virtualbox and configure the network Part.1 | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="在virtualbox安装centos并且调配好网络 Part.1
+之前暑假就因为项目原因要配置一次virtualbox+centos7+MobaXterm作为开发环境，没想到一到学校连接校园网之前调配的就全都断掉了（心态崩了），而且由于之..." />
+    <meta name="keywords" content="tool" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Install centos in virtualbox and configure the network Part.1
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-09
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="http://localhost:4000/tag/-uPahkw58/" class="post-tag">
+                  # tool
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="在virtualbox安装centos并且调配好网络-part1">在virtualbox安装centos并且调配好网络 Part.1</h3>
+<p>之前暑假就因为项目原因要配置一次virtualbox+centos7+MobaXterm作为开发环境，没想到一到学校连接校园网之前调配的就全都断掉了（心态崩了），而且由于之前做完没有写个博客之类的记录，这下相当于重头再来了。不过好在还是有一点经验，外加上之前也保存的了一些有用的网站。这次配置起来还是快了不少。</p>
+<p>目标：在virtualbox上安装运行centos，并且虚拟机可以连接互联网，主机和虚拟机之间也可以互相连接。最后连接虚拟机SSH。</p>
+<h4 id="step1-下载virtualbox和centos7">Step1. 下载virtualbox和centos7</h4>
+<p><a href="https://www.virtualbox.org/wiki/Downloads">virtualbox下载地址</a>，选择<strong>VirtualBox 6.1.38 platform packages</strong>的本windows版本以及<br>
+<strong>rtualBox 6.1.38 Oracle VM VirtualBox Extension Pack</strong>的<strong>All supported platforms</strong>下载<br>
+<a href="http://mirrors.cqu.edu.cn/CentOS/7.9.2009/isos/x86_64/">centos下载地址</a>  选择**CentOS-7-x86_64-DVD-2009.iso **下载（大概有4.5GB）</p>
+<h4 id="step2-安装virtualbox">Step2. 安装virtualbox</h4>
+<p>安装提示自选安装地址安装完成后，打开【管理】-【全局设定】-【拓展】安装刚才下载的Extension Pack。<br>
+centos下载好之后是一个文件，只要你能找得到地址就可以了。</p>
+<h4 id="step3-在virtualbox上安装centos7输入的内容可以完全照抄">Step3. 在virtualbox上安装centos7（输入的内容可以完全照抄）</h4>
+<h5 id="31-点击新建">3.1 点击【新建】</h5>
+<p>然后输入如下配置：</p>
+<blockquote>
+<figure data-type="image" tabindex="1"><img src="https://s3.bmp.ovh/imgs/2022/10/09/58a0484a0da67979.png" alt="插入图片" loading="lazy"></figure>
+</blockquote>
+<p>之后一路默认，最后点击创建。<a href="https://zhuanlan.zhihu.com/p/355459604">参考教程</a></p>
+<h5 id="32-安装配置">3.2 安装配置</h5>
+<p>选择左侧刚创建好的虚拟机，然后点击【启动】<br>
+之后的窗口会让你选择要安装的系统文件，然后找到下载好的centos系统文件，点击启动</p>
+<blockquote>
+<figure data-type="image" tabindex="2"><img src="https://s3.bmp.ovh/imgs/2022/10/09/b188c3bc49b9afb7.png" alt="" loading="lazy"></figure>
+<center>找到刚才下载的centos系统
+</blockquote>
+<p>然后选择【Install CentOS 7】（就是上下键把高亮调到第一个然后按回车）。<br>
+等待基本配置完成之后，第一个页面是选择语言，翻到最底下选择中文，然后点击【继续】。<br>
+然后是安装信息摘要页面，把每一个选项都点击进去，但是不要做任何配置（除了下面的网络和主机名），点击进去之后立马点完成。</p>
+<p>但是注意！！！！<strong>网络和主机名</strong>选项要选择【打开】，然后再点击完成。</p>
+<blockquote>
+<figure data-type="image" tabindex="3"><img src="https://s3.bmp.ovh/imgs/2022/10/09/a5b9866ff7617b0e.png" alt="网络配置一定要打开！" loading="lazy"></figure>
+<center>这一步对之后的网络配置很重要
+</blockquote>
+<p>完成后的配置如下：</p>
+<blockquote>
+<p><img src="https://s3.bmp.ovh/imgs/2022/10/09/8bd51596b06431db.png" alt="配置" loading="lazy"><br>
+<img src="https://s3.bmp.ovh/imgs/2022/10/09/bb0170f517e39969.png" alt="配置" loading="lazy"></p>
+</blockquote>
+<p>然后点击【开始安装】<br>
+之后设置root密码（Ps. 如果是用108键盘数字，记得<strong>打开Num Lock</strong>，virtualbox启动虚拟机会默认关闭），设置完之后就会开始安装，我们不需要创建新用户，所以忽略右侧的选项。</p>
+<p>安装完成之后点击重新启动。<br>
+localhost login提示我们输入用户名，这里输入<strong>root</strong>,就是刚才黄健的默认管理员用户。<br>
+Paasword提示输入密码，这里的密码输入不可见。<br>
+正确输入之后，就成功进入了~</p>
+<blockquote>
+<figure data-type="image" tabindex="4"><img src="https://s3.bmp.ovh/imgs/2022/10/09/998bf2ffff24e7f8.png" alt="如下" loading="lazy"></figure>
+<center>如果输入错误会提示login incorrect 
+<center>成功进入左侧的提示就会变成类似于最后一行
+</blockquote>
+<p>最后附上参考  <a href="https://zhuanlan.zhihu.com/p/355638540">参考教程</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%9C%A8virtualbox%E5%AE%89%E8%A3%85centos%E5%B9%B6%E4%B8%94%E8%B0%83%E9%85%8D%E5%A5%BD%E7%BD%91%E7%BB%9C-part1">在virtualbox安装centos并且调配好网络 Part.1</a>
+<ul>
+<li><a href="#step1-%E4%B8%8B%E8%BD%BDvirtualbox%E5%92%8Ccentos7">Step1. 下载virtualbox和centos7</a></li>
+<li><a href="#step2-%E5%AE%89%E8%A3%85virtualbox">Step2. 安装virtualbox</a></li>
+<li><a href="#step3-%E5%9C%A8virtualbox%E4%B8%8A%E5%AE%89%E8%A3%85centos7%E8%BE%93%E5%85%A5%E7%9A%84%E5%86%85%E5%AE%B9%E5%8F%AF%E4%BB%A5%E5%AE%8C%E5%85%A8%E7%85%A7%E6%8A%84">Step3. 在virtualbox上安装centos7（输入的内容可以完全照抄）</a>
+<ul>
+<li><a href="#31-%E7%82%B9%E5%87%BB%E6%96%B0%E5%BB%BA">3.1 点击【新建】</a></li>
+<li><a href="#32-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE">3.2 安装配置</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/the-solution-of-insert-images-into-markdown/">
+              <h3 class="post-title">
+                The solution of insert images into markdown 
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

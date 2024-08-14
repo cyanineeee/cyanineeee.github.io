@@ -1,0 +1,215 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prevent jquery animation to triggering than once. | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Prevent jquery animation to triggering than once. | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="https://blog.csdn.net/u013239476/article/details/103155634
+同时调整外部的div，让其跟着内部的图片动画一同改变大小，防止出界等不美观的情况‘
+还有jquery的each函数 同一个..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Prevent jquery animation to triggering than once.
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-18
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>https://blog.csdn.net/u013239476/article/details/103155634<br>
+同时调整外部的div，让其跟着内部的图片动画一同改变大小，防止出界等不美观的情况‘<br>
+还有jquery的each函数 同一个动画绑定多个元素</p>
+<div class="part-2" style="height:fit-content;">
+    <div class="pic" style="height:fit-content;">
+        <img src="oipc.jpg" id="img" style='margin:2px; display:inline;width:100px;height:100px;'>
+        <img src="oipc.jpg" id="img" style='margin:2px; display:inline;width:100px;height:100px;'>
+        <img src="oipc.jpg" id="img" style='margin:2px; display:inline;width:100px;height:100px;'>
+        <img src="oipc.jpg" id="img" style='margin:2px; display:inline;width:100px;height:100px;'>
+    </div>
+    <div style="display:block;">
+        <div style="margin:20px;">
+            <button id="cg">点击改变图片状态</button>
+        </div> 
+        <p>动画效果</p>
+    </div>
+</div>
+<p>$(function(){<br>
+var anime = $('div.part-2 .pic img'),<br>
+div = $('.part-2');</p>
+<pre><code>anime.each(function(){
+    $(this).mouseenter(function(){
+        $(this).stop(true,false).animate({
+            width:'200px',
+            height:'200px'        
+        },250)
+        div.stop(true,false).animate({
+            height:'308px',
+        },250)
+    })
+    $(this).mouseleave(function(){
+        $(this).stop(true,false).animate({
+            width:'100px',
+            height:'100px'  
+        },200)
+        div.stop(true,false).animate({
+            height:'208px',
+        },200)
+        
+    })
+})
+</code></pre>
+<p>})</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/install-centos-in-virtualbox-and-configure-the-network-part2/">
+              <h3 class="post-title">
+                Install centos in virtualbox and configure the network Part.2
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,291 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>scrapy item赋值/填充 细节注意 | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="scrapy item赋值/填充 细节注意 | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1.  起因
+我在爬取到微博热搜的json数据之后，发无论如何都会报错数据库字段方面的问题，具体报错如下：
+Traceback (most recent call last):
+  File &quot;D:\anaconda\envs\D..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              scrapy item赋值/填充 细节注意
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-16
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="1-起因">1.  起因</h2>
+<p>我在爬取到微博热搜的json数据之后，发无论如何都会报错数据库字段方面的问题，具体报错如下：</p>
+<pre><code>Traceback (most recent call last):
+  File &quot;D:\anaconda\envs\DjangoEnv\Lib\site-packages\twisted\internet\defer.py&quot;, line 892, in _runCallbacks
+    current.result = callback(  # type: ignore[misc]
+  File &quot;D:\anaconda\envs\DjangoEnv\Lib\site-packages\scrapy\utils\defer.py&quot;, line 307, in f
+    return deferred_from_coro(coro_f(*coro_args, **coro_kwargs))
+  File &quot;D:\Aproject\django-project\project5-scrapy-tutorial\project_2\tutorial\tutorial\pipelines.py&quot;, line 46, in process_item    
+    self.db[collection_name].insert_one(dict(hot))
+ValueError: dictionary update sequence element #0 has length 1; 2 is required
+</code></pre>
+<p>具体的原因一直不清楚，只能模糊的猜测实在向数据库导入数据的时候，因为格式的原因出错了，但具体是什么原因，我把代码看了一遍又一遍怎么也找不出来哪里错了。猜测可能是爬取的json数据解析错误，所以将json数据下载到文件中，然后在jupyter中不断调试不断找，看看我是把那个括号给漏了😡。<br>
+最后实在是找不到了，想着是不是可以通过调试一步一步的判断哪里出错了，但是我没有在scrapy的文档中找到关于pipeline的调试方法（只有关于spider的），最后在知乎上一篇文章找到了方法，<a href="https://zhuanlan.zhihu.com/p/25200262">参考链接</a>，但是作者的方法在我（windows11+vsc）运行之后会报错，之后参考了评论区的方法，在和<code>scrapy.cfg</code>同一层（项目根目录中）中建立<code>run.py</code>文件，输入以下代码，再在项目中设置断点，然后debug文件<code>run.py</code>，就可以实现调试的功能。</p>
+<blockquote>
+<p>具体代码：</p>
+</blockquote>
+<pre><code class="language-python">import os
+from scrapy.cmdline import execute
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+try:
+    execute(
+    [
+    'scrapy',
+    'crawl',
+    'weibo', #这里换成对应的spider名字
+    '-o',
+    'out.json',
+    ]
+    )
+except SystemExit:
+    pass    
+</code></pre>
+<h2 id="2-调试之后">2.  调试之后</h2>
+<p>在调试之后，我发现<code>pipeline.py</code>文件中对应class类中的<code>process_item()</code>方法中的<code>item</code>变量并不是我想象中的是一个由字典元素组成的列表，而是一个字典，并且key是在<code>item.py</code>文件中设定的，value是在<code>parse()</code>方法中赋值的、我想要的字典元素列表。终于确定的原因，因此修改也很简单。</p>
+<h2 id="3-修改">3. 修改</h2>
+<p>将原本的<code>process_item()</code>方法修改即可</p>
+<pre><code class="language-python">def process_item(self,item,spider):
+    now = datetime.datetime.now() #以当前事件作为collection的名字
+    collection_name = datetime.datetime.strftime(now,'%Y-%m-%d:%H:%M:%S')
+
+    #原来错误的： 
+    #for hot in item:  -&gt;修改为下面的部分
+    for hot in item['realtime']: 
+        self.db[collection_name].insert_one(dict(hot))
+    return item
+</code></pre>
+<h2 id="4-探究原因">4. 探究原因</h2>
+<p><a href="https://docs.scrapy.org/en/latest/topics/items.html#item-types">官方文档</a><br>
+首先，开发者为了方便在python中处理爬到的web数据，因此将item类设计为类字典结构，并且完全copy了python中dict的api（cv大法好😋）</p>
+<blockquote>
+<p><strong>Item objects replicate the standard dict API, including its __init__ method.</strong></p>
+</blockquote>
+<p>因此实际上，item类就是一个在scrapy中的spider, pipeline之间进行数据交换的字典类。他的流程就是：<br>
+第一步，在<code>item.py</code>文件中设定item的key值；<br>
+第二部，在spider中的<code>parse</code>方法中被解析好的网页数据填充value;<br>
+第三步，通过pipeline保存成为文件/保存到数据库等</p>
+<p>详细的例子如下：<br>
+4.1 在items.py中规定一个类，如下：</p>
+<pre><code class="language-python">class Example(scrapy.Item): #必须继承scrapy.Item 才能使用对应的api
+    realtime = scrapy.Field() 
+</code></pre>
+<blockquote>
+<p>这里的Field()的作用<br>
+PS.<a href="https://docs.scrapy.org/en/latest/topics/items.html#scrapy.item.scrapy.Field">官方文档</a><br>
+&quot; The Field class is just an alias to the built-in dict class and doesn’t provide any extra functionality or attributes.&quot; 表明Field类之际上只是python内置字典的别名，没有其他任何别的作用（<a href="https://www.cnblogs.com/fengf233/p/11298623.html#2.field()%E7%B1%BB">Field()源码解析</a>），当然复杂的而是item如何（说实话没看懂😵<a href="https://www.cnblogs.com/twelfthing/articles/4709287.html">item源码解析</a>）。<br>
+当然也可以重写<code>Overriding the serialize_field() method</code>方法，去规定具体的数据类型（<a href="https://docs.scrapy.org/en/latest/topics/exporters.html#overriding-the-serialize-field-method">具体参考官方文档</a>）<br>
+整个item类的使用非常类似与Django的Form类，不过Field()规定的字段类型是远远简单与Django的。</p>
+</blockquote>
+<p>4.2 然后再spider中我爬取到的是一个json数据，例如</p>
+<pre><code class="language-json">{
+&quot;ok&quot;: 1,
+    &quot;data&quot;: {
+        &quot;realtime&quot;: [
+                {
+                &quot;star_name&quot;: {},
+                &quot;word_scheme&quot;: &quot;#新闻标题#&quot;,
+                &quot;emoticon&quot;: &quot;&quot;,
+            }
+        ]}
+}
+</code></pre>
+<p>4.3 然后我在对item.py文件中的类进行填充，如下：</p>
+<pre><code class="language-python">class ExampleSpider(scrapy.Spider):
+    ...#略
+    def parse(self, response):
+            jsondata = json.loads(response.text)          #使用scrapy中response属性text将爬取到的网页解析为str，然后使用json.loads方法转化为字典格式
+            realtime = jsondata['data']['realtime'] #提取热搜数据列表
+            item = Example() #实例化item
+            item['realtime'] = realtime
+            return item
+</code></pre>
+<p>这里需要重点注意<code> item['realtime'] = realtime</code>，虽然在之前已经将realtime列表提取出来，但是在填充的时候，传入pipeline中进行储存的实际上是一个item字典，字典key是在item.py文件中定义的属性，字典value是在parse方法中填充的对象。所以实际上传入到pipeline模块中的item结构是如下：</p>
+<pre><code class="language-json">{ 
+    'realtime': [{
+        &quot;star_name&quot;: {},
+        &quot;word_scheme&quot;: &quot;#新闻标题#&quot;,
+        &quot;emoticon&quot;: &quot;&quot;,
+    },
+    ]
+}
+</code></pre>
+<p>4.4 也就是意味着，如果你在pipeline.py文件的对应类中的process_item方法中，如果需要用到原本的列表，首先从item字典中提取出来，具体如下：</p>
+<pre><code class="language-python">    def process_item(self,item,spider):
+            #....
+        for hot in item['realtime']:
+            #....
+        return item
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-%E8%B5%B7%E5%9B%A0">1.  起因</a></li>
+<li><a href="#2-%E8%B0%83%E8%AF%95%E4%B9%8B%E5%90%8E">2.  调试之后</a></li>
+<li><a href="#3-%E4%BF%AE%E6%94%B9">3. 修改</a></li>
+<li><a href="#4-%E6%8E%A2%E7%A9%B6%E5%8E%9F%E5%9B%A0">4. 探究原因</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/requestspost-he-requestssessionpost-fang-fa-de-qu-bie/">
+              <h3 class="post-title">
+                requests.post和requests.session.post方法的区别
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

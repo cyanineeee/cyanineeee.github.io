@@ -1,0 +1,201 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Asynchronization and single thread about javascript | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Asynchronization and single thread about javascript | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="需要注意的是，setTimeout()只是将事件插入了&quot;任务队列&quot;，必须等到当前代码（执行栈）执行完，主线程才会去执行它指定的回调函数。要是当前代码耗时很长，有可能要等很久，所以并没有办法保证，回调函数一定会在setTi..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Asynchronization and single thread about javascript
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-11-14
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>需要注意的是，setTimeout()只是将事件插入了&quot;任务队列&quot;，必须等到当前代码（执行栈）执行完，主线程才会去执行它指定的回调函数。要是当前代码耗时很长，有可能要等很久，所以并没有办法保证，回调函数一定会在setTimeout()指定的时间执行。  <a href="http://www.ruanyifeng.com/blog/2014/10/event-loop.html">引用原文</a></p>
+<p>setTimeout(fn,0)的含义是，指定某个任务在主线程最早可得的空闲时间执行，意思就是不用再等多少秒了，只要主线程执行栈内的同步任务全部执行完成，栈为空就马上执行。<a href="https://juejin.cn/post/6844903512845860872">原文2</a></p>
+<p>理解：<br>
+js单线程存储两个调用栈：执行栈和事件栈。js在运行的时候永远只有一处代码在执行，但是这段代码来自于执行栈还是事件栈是根据代码内容决定，浏览器中的js引擎中有一个异步进程处理，用来判断js的异步进程是否满足执行条件，如果不满足则不执行，满足就将其放入事件栈中，等待执行栈所有任务执行完成之后在进行调用。</p>
+<p>理解引用：三、异步是如何实现的：异步是靠浏览器的两个或者两个以上的常驻线程来完成的，第一个就是js的执行线程，第二个就是事件触发线程，js执行线程发出异步请求给浏览器，浏览器开一个新的请求线程来处理，js执行线程继续执行其他任务。那么事件触发线程呢？他就监听这个请求，如果这个请求完成了，就将该事件插入到JS执行队列的尾部等待JS处理。<br>
+<a href="https://www.zhihu.com/question/20866267/answer/251401123">链接</a><br>
+<a href="https://www.bilibili.com/video/BV1Sy4y1C7ha?p=280&amp;spm_id_from=pageDriver&amp;vd_source=c66937bc5207a56bafe7811cb2b0c4da">黑马课程 p278 279 280</a><br>
+深入理解后的代码：</p>
+<pre><code>setTimeout(function(){
+    console.log('定时器开始啦')
+});
+
+new Promise(function(resolve){
+    console.log('马上执行for循环啦');
+    for(var i = 0; i &lt; 10000; i++){
+        i == 99 &amp;&amp; resolve();
+    }
+}).then(function(){
+    console.log('执行then函数啦')
+});
+
+console.log('代码执行结束');
+
+</code></pre>
+<p>输出结果：</p>
+<blockquote>
+<p>马上执行for循环啦<br>
+代码执行结束<br>
+执行then函数啦<br>
+定时器开始啦</p>
+</blockquote>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/js-promise/">
+              <h3 class="post-title">
+                js promise
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

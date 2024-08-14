@@ -1,0 +1,204 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>非遗开发日志 --3 | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="非遗开发日志 --3 | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+object-fit属性
+https://developer.mozilla.org/zh-CN/docs/Web/CSS/object-fit
+li嵌套a嵌套img时
+object-fit属性的cover只针对父节点，所以如果对li外层..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              非遗开发日志 --3
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-26
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <ol>
+<li>object-fit属性<br>
+https://developer.mozilla.org/zh-CN/docs/Web/CSS/object-fit</li>
+<li>li嵌套a嵌套img时<br>
+object-fit属性的cover只针对父节点，所以如果对li外层的div进行限制高度，那img作用的object-fit属性将不起作用。</li>
+<li>深刻理解inline 、inline-block 、block之间的区别于关系</li>
+<li>深刻理解relative 、absolute的效果<br>
+absolute定位的依据是 阶层离自己最近且<code>具有设定</code>的父层空间，因此一般需要搭配父节点的relabtive属性使用<br>
+https://www.runoob.com/css/css-positioning.html#position-relative</li>
+<li>深入理解float属性<br>
+https://www.runoob.com/css/css-float.html</li>
+<li>setInterva()函数+jq改变css实现图片轮播</li>
+<li>深入理解flex布局</li>
+<li>#html标签使用多个class<br>
+html标签是允许定义多个class类名的。比如：<br>
+<code>&lt;div class = &quot;exp1 exp2&quot;&gt;&lt;/div&gt;</code><br>
+上边这个div就用到了exp1、exp2这两个class类，对于个数是没有限制，只需每个类名之间用空格隔开就好。</li>
+<li>关于django的url配置<br>
+django会自动在url路径前面添加<code>/</code>，所以不需要再路径前面添加反斜杠，如果添加会产生错误</li>
+<li>django不能及时更新修改的css和js文件等<br>
+https://blog.csdn.net/qq_38388811/article/details/105625981<br>
+因为浏览器会缓存，需要清除缓存后加载</li>
+<li>深入理解django的URL和ROOT路径配置<br>
+包括STATIC_URL、STATICFILES_DIRS、MEDIA_URL、MEDIAFILES_DIRS</li>
+<li>django中利用模板再style属性中添加css的写法（注意引号的使用）<br>
+<code>style='background-image:url(&quot;{% static 'pic1.jpg' %}&quot;) '</code><br>
+或者<br>
+<code>style='background-image: url(&quot;{% static &quot;pic2.jpg&quot; %}&quot;)'</code><br>
+但最好还是不要这样子写 因为特别容易出错</li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/fei-yi-xiang-mu-kai-fa-ri-zhi-1/">
+              <h3 class="post-title">
+                非遗项目开发日志 1
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,462 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>c/c++指针 | cyanine</title>
+<link rel="shortcut icon" href="http://localhost:4000/favicon.ico?v=1723632390821">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost:4000/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="c/c++指针 | cyanine - Atom Feed" href="http://localhost:4000/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1. 传入指针
+简单讲就是，在c中，传入函数的所有东西都是一个”副本“，传入的指针实际上是该指针的副本。因此，如果如果你希望一个函数对传入的指针的指向进行修改，那么这个函数是不会作用到这个函数之外的，换而言之，你的修改不能让主函数中的指针指..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="http://localhost:4000">
+  <img class="avatar" src="http://localhost:4000/images/avatar.png?v=1723632390821" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+      
+        <a href="http://localhost:4000/post/cczhi-zhen" class="menu">
+          凑数
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              c/c++指针
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-05-01
+              </span>
+              <span>
+                16 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="1-传入指针">1. 传入指针</h2>
+<p>简单讲就是，在c中，传入函数的所有东西都是一个”副本“，传入的指针实际上是该指针的副本。因此，如果如果你希望一个函数对传入的指针的指向进行修改，那么这个函数是不会作用到这个函数之外的，换而言之，你的修改不能让主函数中的指针指向发生修改。因此，如果你希望通过函数修改指针的指向，那么在c中需要通过指针的指针。<br>
+<a href="https://zhuanlan.zhihu.com/p/70209061">reference_1</a></p>
+<h2 id="2-传入指针的指针">2. 传入指针的指针</h2>
+<p>首先明确两点：</p>
+<blockquote>
+<ol>
+<li>自增运算符的优先级<code>++</code>高于解引用<code>*</code></li>
+<li>c中所有的传入都是传值（传指针是传入指针值）在函数内对值的修改都是对副本的修改，不会对函数作用外部造成影响''（第一部分）</li>
+</ol>
+</blockquote>
+<p>下面是示例代码：</p>
+<pre><code class="language-c++">#include&lt;cstdio&gt;
+#include&lt;iostream&gt;
+void function(int **s){
+    printf(&quot;\n&quot;);
+    // s++;
+    // *s++;
+    //(*s)++;    
+    // **s++;
+    // (**s)++;
+    std::cout&lt;&lt;s&lt;&lt;std::endl; //指针的指针
+    std::cout&lt;&lt;*s&lt;&lt;std::endl; //被指向的指针
+    std::cout&lt;&lt;**s&lt;&lt;std::endl; //被指向指针指向的值
+}
+int main(){
+    int num[3] = {1,2,3};
+    int *a = num;
+    std::cout&lt;&lt;a&lt;&lt;std::endl;
+    function(&amp;a);//传入指针的地址 （或者 指向a指针地址的指针）
+}
+</code></pre>
+<blockquote>
+<p>对关键部分的解释：<br>
+1. s++<br>
+代表指向指针的指针向后移动一位（指针地址加一），这将导致指针丢失，指向未知区域，也有可能报段错误（会直接终止运行）。但这一项操作不会对函数外产生影响。<br>
+2. *s++<br>
+代表指向指针的指针先向后移动一位（指针地址加一），然后在解引用。因为指向指针的指针在后移之后指向位置区域，因此可能输出未知值，也有可能报段错误（会直接终止运行）。但这一项操作不会对函数外产生影响。<br>
+3. (*s)++<br>
+代表先对指向指针的指针进行解引用，然后后移一位。在本例中，指针指向的指针指向数组的第一个元素的内存地址，所以结果是指向数组的指针后移，指向数组的第二个元素。这导致指向指针的指针的值发生改变，就是指向数组的指针发生改变。因为是产生副本的指针指向的指针发生了改变，所以会影响到主函数中a指针本身的值。<br>
+4. **s++<br>
+代表二重指针先后移，然后解引用拿到双重指针指向的指针，然后再次解引用，拿到指针指向的值。因为1的缘故，所以会产生可能的错误或位未知输出。会对住函数外产生影响。<br>
+5. (**s)++<br>
+对双重指针进行两次解引用，拿到指针指向的值，然后再加一，所以结果是s指向的值加一，也就是数组的第一个值加一。会影响到主函数中的数组。<br>
+6. 输出s<br>
+输出双重指针的内存地址。<br>
+7. 输出*s<br>
+输出双重指针解引用后的指针的内存地址，（也就是输出a指针的内存地址）。<br>
+8. 输出**s<br>
+输出对双重指针进行两次解引用的值，（理解为对双重指针指向的指针进行解引用），结果是a指针解引用后的值（或者a指针指向地址的值）。<br>
+于此对应，c++中补充了传引用引用，可以直接通过引用来对传入的参数进行修改（第五部分）。个人理解，这是对指针的指针的一个方便的优化，因为通过传引用引用就可以使函数中的修改直接作用于外部的变量。</p>
+</blockquote>
+<h2 id="3-野指针和空指针null">3. 野指针和空指针（NULL）</h2>
+<h3 id="31-野指针">3.1 野指针</h3>
+<p>指向垃圾内存的指针，往往由于一些不严谨的地方产生。</p>
+<blockquote>
+<p>产生原因：<br>
+1.指针变量没有被初始化。这里需要注意，指针初始化后为赋值并不会指向NULL。<br>
+2.指针被free或者delete之后，没有设置为NULL，让人误以为这是一个合法指针。因此强调new/delete或者malloc/freeze一定要成对出现。<br>
+3.指针操作超越了变量的作用范围。</p>
+</blockquote>
+<p><strong>野指针在调用的时候可能会让程序误认为是一个正常指针，因此操作的时候可能会产生意想不到的问题，因此需要避免这种问题。</strong></p>
+<h3 id="32-空指针">3.2 空指针</h3>
+<ol>
+<li>空指针不指向任何实际的对象或者函数。反过来说，任何对象或者函数的地址都不可能是空指针。</li>
+<li>空指针是一个特殊的指针，因为这个指针不指向任何地方。这意味任何一个有效的指针如果和空指针进行相等的比较运算时，结果都是false。</li>
+<li>空指针只是一种编程概念，就如一个容器可能有空和非空两种基本状态。</li>
+<li>NULL是一个标准规定的宏定义，用来表示空指针常量。在C++里面被直接定义成了整数立即数的0，而在没有__cplusplus定义的前提下，就被定义成一个值是0的 void* 类型的指针常量。<br>
+<a href="https://blog.csdn.net/u014647208/article/details/53383223">reference_2</a></li>
+</ol>
+<blockquote>
+<p><strong>注：指针声明一定要明确指向哪里，否则会产生“野指针”</strong></p>
+</blockquote>
+<h2 id="4-结构体指针">4. 结构体指针</h2>
+<h3 id="41-声明结构体和声明结构体指针的区别">4.1 声明结构体和声明结构体指针的区别</h3>
+<pre><code class="language-c++">typedef struct pp{
+    int *test;
+    int *another;
+}pp;
+int main(){
+    pp P;
+    pp *P1;
+    printf(&quot;%d\n&quot;,sizeof(P));
+    printf(&quot;%d&quot;,sizeof(P1));
+}
+</code></pre>
+<pre><code class="language-c++">//输出
+16
+8
+</code></pre>
+<p>从上面给的实例中可以很清楚的看到声明结构体和声明结构体指针的区别：声明结构体就是在栈区分配了一个与结构体大小相同的内存，但是指针只是申请了一个指针类型的内存。如果只是声明了一个结构体指针而没有初始化（new/malloc/指定变量地址），那么该指针就是“野指针”，在调用的时候会出现错误。</p>
+<h3 id="42-结构体指针和结构体内部的指针都必须初始化">4.2 结构体指针和结构体内部的指针都必须初始化</h3>
+<pre><code>    [reference](https://blog.csdn.net/qq_40285768/article/details/104607834)
+    原因于此类似，但是需要注意定义在结构体内部的指针如果需要调用也是需要初始化。
+</code></pre>
+<h2 id="5-c的传引用引用">5. c++的传引用引用（<code>&amp;</code>）</h2>
+<blockquote>
+<p><strong>个人理解：传引用引用是对双指针的优化，他让函数可以直接对指针本身进行修改和操作</strong></p>
+</blockquote>
+<h3 id="51">5.1</h3>
+<p>如果在函数声明的时候使用了<code>Element* &amp;S</code>,那么表明是一个传引用引用的指针，是可以直接对指针本身的值进行操作，也会影响到函数外部。因此如果只是想要只读的调用（例如遍历链表），那么可以使用<code>const</code>关键字或者创建一个新的指针指向传入的指针，然后对新的指针进行操作。</p>
+<p>补充：声明指针一定要确保指针指向一个地址或者指针申请一块空间，否则会在传入函数指针时出现错误，或者调用的时候导致错误。</p>
+<p>以下是对应的示例代码：</p>
+<pre><code class="language-c++">#include&lt;cstdio&gt;
+#include&lt;iostream&gt;
+typedef struct pointer{
+   int data;
+   struct pointer *next;
+}pointer;
+void function(pointer* &amp;s){
+   pointer *p = new pointer;
+   p -&gt; data = 5;
+   p -&gt; next = NULL;
+   s -&gt; next = p;
+   std::cout&lt;&lt;s -&gt; next -&gt; data;
+}
+int main(){
+   pointer *P;
+   P = new pointer; //重点！！！！
+   function(P);
+   std::cout&lt;&lt;P -&gt; next -&gt; data;
+   delete P;
+}
+</code></pre>
+<blockquote>
+<p>如果缺少<code>P = new pointer; //重点！！！！</code>这一句为声明后的指针指定的区域，那么在function的调用中会因为s指向的区域不存在而导致<code>segment error</code>。</p>
+</blockquote>
+<h3 id="52">5.2</h3>
+<p>但如果不是为了使用调用的指针，而是给声明的指针赋值，那么传引用引用是可以，并且能够达到预期的效果。这种常见于数据结构中初始化一个结构的函数的操作中。<br>
+例如：</p>
+<pre><code class="language-c++">typedef struct pointer{
+   int data;
+   struct pointer *next;
+}pointer;
+void function(pointer* &amp;s){
+   // pointer *p = new pointer;
+   // p -&gt; data = 5;
+   // p -&gt; next = NULL;
+   // s = p; //与下面的效果一样
+
+   s = new pointer;
+   s -&gt; data = 5;
+   s -&gt; next = NULL;
+   std::cout&lt;&lt;s -&gt; data;
+}
+int main(){
+   pointer *P;
+   function(P);
+   std::cout&lt;&lt;P -&gt; data;
+   delete P;
+}
+</code></pre>
+<pre><code class="language-c++">//输出结果
+55
+</code></pre>
+<p>自我理解： c++为了能简化在函数中能对指针地址的操作，因此可以使用<code>pointer* &amp;</code>来表示传引用引用一个指针，在函数内对指针的地址进行操作是可以影响到主函数中。在c中传入指针只是传入了指针副本，不能对传入指针本身进行有效操作（这时候就需要双重指针）。</p>
+<h3 id="53-c不允许传引用引用一个数组元素">5.3 c++不允许传引用引用一个数组元素</h3>
+<pre><code class="language-c++">void function(int &amp;edges[6][2]) //这样是不允许的 编译会报错
+void function(int &amp;test[6][) //这样是不允许的 编译会报错
+</code></pre>
+<p>具体在第七部分（向函数传入数组指针）</p>
+<h2 id="6-多维数组与指针">6. 多维数组与指针</h2>
+<p>首先请记住理解：</p>
+<blockquote>
+<p><strong>多维数组实际上是数组的数组/数组元素为数组的数组</strong></p>
+</blockquote>
+<h3 id="61-总结">6.1 总结</h3>
+<p>对于二维数组可以分为以下三种赋值方式:</p>
+<pre><code class="language-c++">int a[3][5]; 
+...//进行赋值操作
+
+int (*d)[3][5] = &amp;a;
+int *e = &amp;a[0][0];
+int (*f)[5] = a;
+</code></pre>
+<p>区别在于：<br>
+第一种赋值得到的指针的操作和原来的多维数组操作没有区别；<br>
+第二种指定的是a数组第一个数组元素的第一个元素，遍历的时候是线性的；<br>
+第三种相当于规定了指向a数组元素类型的一个指针，因为a数组的元素类型是一个长度为五的整型数组，因此规定了一个这样类型的指针指向a。</p>
+<h3 id="62-详细探究过程如下很长基于个人理解">6.2 详细探究过程如下（很长，基于个人理解）:</h3>
+<pre><code class="language-c++">    #include&lt;iostream&gt;
+	int main(){
+	    using namespace std;
+	    int a[3][5]; //a是长度为3的数组 每个元素又都是一个长度为5的数组
+	    int p = 0;
+	    for(int i = 0; i &lt; 3 ; i++){
+	        for(int j = 0; j &lt; 5 ; j++){
+	            a[i][j] = p;
+	            cout&lt;&lt;p&lt;&lt;'\t';
+	            p++;
+	        }
+	        cout&lt;&lt;endl;
+	    }
+    //需要谨记 自增运算符/自减的运算优先级都要比*(取值运算符)优先级高  又高于加号/减号运算符==============================
+	    int (*d)[3][5] = &amp;a;  //对整个二维数组的第一个元素取地址
+	    cout&lt;&lt;(*d)&lt;&lt;&quot;\t&quot;; //输出的是a数组第一个元素的地址
+	    cout&lt;&lt;(*d)[0]&lt;&lt;&quot;\t&quot;; //输出的是a数组第一个元素的地址 与上方的输出相同
+	    cout&lt;&lt;*d[1]&lt;&lt;&quot;\t&quot;;  // 输出的是一个指针 
+	    cout&lt;&lt;*(*d)[1]&lt;&lt;&quot;\t&quot;;  // 上面的指针指向a的第二元素数组的第一个元素 即a[1][0]
+	    cout&lt;&lt;(*d)[2][2]&lt;&lt;'\t'; //输出的是a[2][2]
+	    cout&lt;&lt;(*d+1)[2][2]&lt;&lt;'\t'; //未知输出  
+	//=============================================
+	    cout&lt;&lt;(*d+1)&lt;&lt;'\t'; // 输出一个指针 
+	    cout&lt;&lt;*(*d+1)&lt;&lt;'\t'; // 还是一个指针
+	    cout&lt;&lt;*(*(*d+1))&lt;&lt;'\t'; // 是a[1][0] =&gt; 可以得出 对于赋值给二维数组第一个元素的地址的指针 对其进行运算 就是将a数组的指针向后移动一位
+	    cout&lt;&lt;*(*d+1)&lt;&lt;&quot;   &quot;&lt;&lt;&amp;a[1][0]; //不放心 检查一下地址是否一样
+	    // =&gt; 由上面四个输出推测 对二维数组的第一个元素指针进行运算 那么就是其实就是将指向a数组的指针向后运算 不涉及a数组内的（数组）元素
+	    //因此 如果想要遍历a数组的第一个数组元素 那么应该对第一个元素的指针进行运算然后解析
+	    cout&lt;&lt;*((*d)[1]+1)&lt;&lt;&quot;\t&quot;; //输出6
+	    //检查是6还是5+1 使用地址
+	    cout&lt;&lt;(*d)[1]+1&lt;&lt;&quot;\t&quot;&lt;&lt;&amp;a[1][1]; // 地址一样 所以就是
+	
+	    //其他的尝试输出
+	    cout&lt;&lt;*(*(d+1))&lt;&lt;'\t'; // 是一个指针
+	    cout&lt;&lt;*(*(*(d+1)))&lt;&lt;'\t'; // 未知输出
+	
+	    int *e = &amp;a[0][0]; //这样会导致对上面操作的数组发生错误 因此两个赋值并不一致
+	    // =&gt; 可以理解为 上方是声明了一个[3][5]类型的指针，然后指向a
+	    // 下方就是简单的指向a数组第一个元素数组的第一个元素的指针 为了对比 来输出地址进行对比
+	    cout&lt;&lt;endl&lt;&lt;e&lt;&lt;&quot;  &quot;&lt;&lt;d&lt;&lt;endl; //地址一致 因此猜测正确 指向的地址一样 但是指针类型不一样
+	
+	    //接下来对e进行运算
+	    cout&lt;&lt;*(e+1)&lt;&lt;&quot;\t&quot;; //输出1，即a[0][1]
+	    cout&lt;&lt;*(e+5)&lt;&lt;&quot;\t&quot;&lt;&lt;endl; //输出5 即a[1][0] 发现直接输出a数组第二个数组元素的第一个元素 
+	    //  其实也可以解释为 实际上再内存中还是呈线性的 逻辑上还是线性储存的
+	
+	    // =&gt; 猜想d指针是否也能够进行类似操作 而不是解引用之后再对指针进行操作再进行解引用 -&gt; 显而易见不可以
+	    //对d指针的更深一步理解 他就是将a数组整体进行了copy 因此他的操作不想e指针那么丝滑(指可以直接线性运算迭代)
+	    // 他的操作也和a数组原本的操作更加接近 只不过都换成了指针
+	
+	//===============================================================
+	    cout&lt;&lt;endl;
+	    //再来看c++ primer中的二维数组指针
+	    int (*f)[5] = a;
+	    //通过上面的操作 因此这一下理解更加清晰
+	    // =&gt; 自我理解:这是一个类型为[指向五个元素数组]的指针 因此对他进行指针运算相当于对a数组进行运算
+	    cout&lt;&lt;*f&lt;&lt;&quot;\t&quot;&lt;&lt;**f&lt;&lt;&quot;\t&quot;; //说明这样赋值的指针也是指向a数组第一个数组元素的第一个元素
+	    cout&lt;&lt;*((*f)+1)&lt;&lt;endl; // 因此这样就是对第一个数组元素的指针后移后再解引用 所以就是1
+	    // 所以现在我希望通过进行指针运算访问a数组内第二个数组的元素
+	    cout&lt;&lt;*(*(f+1)+1)&lt;&lt;&quot;\t&quot;; // 猜测正确 f指针就是一个指向a数组的指针 直接对f指针运算+1 得到a数组第二个元素的指针 然后再次+1 代表a的第二个数组的指针向后移 然后解引用 得到6 也就是a[1][1]
+	    // 但是为什么二维数组的赋值要这样写？ 
+	    // 首先需要明确二维数组实际上是数组元素为数组类型的数组
+	    // 因此a数组内的元素类型就是一个数组 因此指向a数组的指针就是数组指针的指针 所以才需要这样规定
+	    
+	    //=&gt; 与此同时 还需要注意区别数组指针和指针的数组
+	    //ex. int (*pointer)[10];
+	    //ex. int *pointer[10];
+	    // 前者是多维数组指针 后者是指针的数组(即pointer这个数组内的元素都是int*(int型指针)）
+	
+	    cout&lt;&lt;endl&lt;&lt;&quot;运行结束&quot;&lt;&lt;endl;
+	}
+</code></pre>
+<h2 id="7-向函数传入数组指针">7. 向函数传入数组指针</h2>
+<p><a href="https://www.cnblogs.com/cygalaxy/p/6963789.html">reference</a></p>
+<p><a href="https://blog.csdn.net/qq_36965962/article/details/106547698">reference_2</a><br>
+<a href="https://blog.csdn.net/weixin_43961780/article/details/106364838">reference_3</a><br>
+<a href="https://www.cnblogs.com/chenyangyao/p/5222696.html">reference_4</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-%E4%BC%A0%E5%85%A5%E6%8C%87%E9%92%88">1. 传入指针</a></li>
+<li><a href="#2-%E4%BC%A0%E5%85%A5%E6%8C%87%E9%92%88%E7%9A%84%E6%8C%87%E9%92%88">2. 传入指针的指针</a></li>
+<li><a href="#3-%E9%87%8E%E6%8C%87%E9%92%88%E5%92%8C%E7%A9%BA%E6%8C%87%E9%92%88null">3. 野指针和空指针（NULL）</a>
+<ul>
+<li><a href="#31-%E9%87%8E%E6%8C%87%E9%92%88">3.1 野指针</a></li>
+<li><a href="#32-%E7%A9%BA%E6%8C%87%E9%92%88">3.2 空指针</a></li>
+</ul>
+</li>
+<li><a href="#4-%E7%BB%93%E6%9E%84%E4%BD%93%E6%8C%87%E9%92%88">4. 结构体指针</a>
+<ul>
+<li><a href="#41-%E5%A3%B0%E6%98%8E%E7%BB%93%E6%9E%84%E4%BD%93%E5%92%8C%E5%A3%B0%E6%98%8E%E7%BB%93%E6%9E%84%E4%BD%93%E6%8C%87%E9%92%88%E7%9A%84%E5%8C%BA%E5%88%AB">4.1 声明结构体和声明结构体指针的区别</a></li>
+<li><a href="#42-%E7%BB%93%E6%9E%84%E4%BD%93%E6%8C%87%E9%92%88%E5%92%8C%E7%BB%93%E6%9E%84%E4%BD%93%E5%86%85%E9%83%A8%E7%9A%84%E6%8C%87%E9%92%88%E9%83%BD%E5%BF%85%E9%A1%BB%E5%88%9D%E5%A7%8B%E5%8C%96">4.2 结构体指针和结构体内部的指针都必须初始化</a></li>
+</ul>
+</li>
+<li><a href="#5-c%E7%9A%84%E4%BC%A0%E5%BC%95%E7%94%A8%E5%BC%95%E7%94%A8">5. c++的传引用引用（<code>&amp;</code>）</a>
+<ul>
+<li><a href="#51">5.1</a></li>
+<li><a href="#52">5.2</a></li>
+<li><a href="#53-c%E4%B8%8D%E5%85%81%E8%AE%B8%E4%BC%A0%E5%BC%95%E7%94%A8%E5%BC%95%E7%94%A8%E4%B8%80%E4%B8%AA%E6%95%B0%E7%BB%84%E5%85%83%E7%B4%A0">5.3 c++不允许传引用引用一个数组元素</a></li>
+</ul>
+</li>
+<li><a href="#6-%E5%A4%9A%E7%BB%B4%E6%95%B0%E7%BB%84%E4%B8%8E%E6%8C%87%E9%92%88">6. 多维数组与指针</a>
+<ul>
+<li><a href="#61-%E6%80%BB%E7%BB%93">6.1 总结</a></li>
+<li><a href="#62-%E8%AF%A6%E7%BB%86%E6%8E%A2%E7%A9%B6%E8%BF%87%E7%A8%8B%E5%A6%82%E4%B8%8B%E5%BE%88%E9%95%BF%E5%9F%BA%E4%BA%8E%E4%B8%AA%E4%BA%BA%E7%90%86%E8%A7%A3">6.2 详细探究过程如下（很长，基于个人理解）:</a></li>
+</ul>
+</li>
+<li><a href="#7-%E5%90%91%E5%87%BD%E6%95%B0%E4%BC%A0%E5%85%A5%E6%95%B0%E7%BB%84%E6%8C%87%E9%92%88">7. 向函数传入数组指针</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="http://localhost:4000/post/python-da-kai-zui-jin-guan-bi-de-word-wen-jian-xu-qiu-jie-jue/">
+              <h3 class="post-title">
+                python打开最近关闭的word文件需求解决
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="http://localhost:4000/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
