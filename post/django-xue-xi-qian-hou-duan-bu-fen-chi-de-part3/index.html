@@ -1,0 +1,354 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>django学习 -- 前后端不分离的 -- part.3  | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="django学习 -- 前后端不分离的 -- part.3  | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="50.ajax请求
+
+get请求
+
+$.ajax({
+    url : '你的url'，
+    type : 'get',
+    data:{
+        ...
+        //你的数据 json(k-v对)
+    },
+..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              django学习 -- 前后端不分离的 -- part.3 
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-07-01
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="50ajax请求">50.ajax请求</h3>
+<ul>
+<li>get请求</li>
+</ul>
+<pre><code class="language-js">$.ajax({
+    url : '你的url'，
+    type : 'get',
+    data:{
+        ...
+        //你的数据 json(k-v对)
+    },
+    dataType:'JSON', //将请求道的json数据转化为js对象
+    success:function(res){ //res是返回值
+        //你的操作...
+    }
+})
+</code></pre>
+<ul>
+<li>post请求</li>
+</ul>
+<pre><code class="language-js">$.ajax({
+    url : '你的url'，
+    type : 'post',
+    data:{
+        ...
+        //你的数据 json(k-v对)
+    },
+    dataType:'JSON', //将请求道的json数据转化为js对象
+    success:function(res){ //res是返回值
+        //你的操作...
+    }
+})
+</code></pre>
+<p>免除scrf的认证(这样ajax就可以不用携带csrf)</p>
+<pre><code class="language-python">from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def exanple(request):
+    #你的视图函数
+</code></pre>
+<p>PS. 需要记得，ajax请求的url在django中也需要注册在<code>urls.py</code>文件中。<br>
+还有，ajax请求后端返回的必须是json格式（就是使用python的json模块对字典进行处理（dumps）一下）；或者django中有<code>JsonResponse</code>可以字典打包为json，不用自己处理。<br>
+如果jq直接选中表单（通过id），通过<code>serialize()</code>方法就可以获取表单的所有数据（例如<code>$('#form').serialize()</code>），之后ajax发送到后台的就是一整个表单数据(后端通过<code>request.POST</code>获取的是一个字典)。</p>
+<h3 id="51校验ajax提交的请求">51.校验ajax提交的请求</h3>
+<ul>
+<li>通过modelform<br>
+<a href="https://www.bilibili.com/video/BV1NL41157ph?p=58&amp;vd_source=c66937bc5207a56bafe7811cb2b0c4da">4-12 1:00:50</a><br>
+因为ajax提交表单数据后，后台获取的是一个字典，因此可以通过modelform的data实例化，然后使用<code>is_valid()</code>进行校验。</li>
+</ul>
+<h3 id="52formerrors中到底是什么">52.form.errors中到底是什么</h3>
+<p>是一个django中的ErrorDict，它包含一个<code>as_json()</code>方法，可以自动帮助我们将它转化为json信息</p>
+<h3 id="53jq中的each可以遍历给定的对象">53.jq中的<code>$.each()</code>可以遍历给定的对象</h3>
+<pre><code class="language-js">$.each(对象,function(key,val ) =&gt; {
+//...进行操作，k,v是假设他是一个字典对象，如果是列表或者其他的可迭代对象，那么就给函数传入的参数做相应的变化即可
+}).
+</code></pre>
+<h3 id="54jq的next方法">54.jq的<code>.next()</code>方法</h3>
+<p>选择给定元素紧邻的下一个元素<br>
+<a href="https://www.w3school.com.cn/jquery/traversing_next.asp">解释link</a></p>
+<h3 id="55记不清了可以回顾">55.记不清了可以回顾</h3>
+<ul>
+<li><a href="https://www.bilibili.com/video/BV1NL41157ph?p=58&amp;vd_source=c66937bc5207a56bafe7811cb2b0c4da">武沛齐-django3教程  5-1 </a></li>
+</ul>
+<h4 id="56jq的empty方法">56.jq的empty()方法</h4>
+<ul>
+<li>清除所选元素内的所有文本内容和子元素<br>
+<a href="https://api.jquery.com/empty/">reference_empty()</a></li>
+</ul>
+<h3 id="57modelform后端自定义储存">57.modelform后端自定义储存</h3>
+<p>如果我们设定了一个表单，但是用户不能修改编号等随机生成的信息，那么就需要在获取到post表单信息之后，手动添加。<br>
+对于一个实例化之后的modelform类，通过<code>modelformexample.instance.自定属性=</code>来添加用户输入没有包含的字段。</p>
+<h3 id="58modelform校验空字段">58.modelform校验空字段</h3>
+<ul>
+<li>如果在字段设置的时候添加<code>required = False</code>，那么表单字段可以为空，默认的True代表表单字段必须不能为空，否则会在校验之后添加“该字段不能为空”的错误提示信息。但是这个仅仅只是让表单不验空，后面的<code>clean_[字段]</code>还是会默认执行的（如果没有这个钩子函数就相当于不进行校验）。</li>
+<li><a href="https://blog.csdn.net/Hackeryuan/article/details/108195456">reference</a><br>
+PS. 当然，如果你在定义modelform或者form的时候不添加对应的字段，那么就不会校验这个字段，然后通过<code>.instance.自定属性=</code>来自定义储存字段，应用例如订单的完成事件、订单的编号等。</li>
+<li>form和modelform的校验会发生在三种情况下：调用<code>is_valid()</code> ，调用<code>.errors</code>获取错误信息的时候还有直接调用<code>full_clean()</code>方法的时候。</li>
+</ul>
+<blockquote>
+<p>These are normally executed when you call the is_valid() method on a form. There are other things that can also trigger cleaning and validation (accessing the errors attribute or calling full_clean() directly), but normally they won’t be needed.<br>
+<a href="https://docs.djangoproject.com/zh-hans/4.2/ref/forms/validation/">reference_django_official</a></p>
+</blockquote>
+<h3 id="59-登录系统的用户录入到form表单中不需要用户填写">59. 登录系统的用户录入到form表单中，不需要用户填写</h3>
+<p>通过session<br>
+<code>request.session['info'][之前储存的字段属性]</code></p>
+<h3 id="60-jq清空表单输入">60. jq清空表单输入</h3>
+<ul>
+<li>通过jq选取表单元素之后，获取dom元素，然后使用dom的<code>reset()</code>方法置空表单。<br>
+<code>$('#表单id/选取表单')[0].reset();</code>  jq对象 -&gt; dom对象 -&gt; 使用reset()方法</li>
+</ul>
+<h3 id="61jq选择一组class可以直接绑定一组元素的事件">61.jq选择一组class可以直接绑定一组元素的事件</h3>
+<pre><code class="language-js">$('.delete-btn').click(function() {
+    $('#delete-modal').modal('show');
+})
+</code></pre>
+<h3 id="62ajax删除确认需要设置全局变量">62.ajax删除确认需要设置全局变量</h3>
+<p>因为删除到确认中间分步骤，需要通过全局变量来保证最终删除的可以获取到选择到的那一个元素。</p>
+<h3 id="63-ajax的get请求传递方式">63. ajax的get请求传递方式</h3>
+<ul>
+<li>一种是直接拼接</li>
+</ul>
+<pre><code class="language-js">$.ajax({
+    url :'login/order/delete/'+nid+'/',  //用于后台是通过
+     type : 'GET',
+     ..
+})
+</code></pre>
+<p>用于django后端是通过get请求直接处理参数的视图函数，例如：</p>
+<pre><code>#urls.py
+    path('login/order/delete/&lt;int:id&gt;',views.order_delete,name ='order_delete'), #删除订单
+
+#views.py视图函数
+def order_delete(request,id):
+    Orderform.objects.filter(id = id).delete()
+    return redirect('/login/order/')
+</code></pre>
+<ul>
+<li>另一种使通过data参数，让ajax帮助拼接url：</li>
+</ul>
+<pre><code class="language-js">$.ajax({
+        url :'login/order/delete/', 
+        type : 'GET',
+        data:{
+            id:nid,
+        },
+       ...    // =&gt; 最终的url ： login/order/delete/?id=&quot;nid的值&quot;
+})
+</code></pre>
+<p>这样django就可以通过get获得url中的参数</p>
+<pre><code class="language-python">def order_delete(request):
+    id = request.GET.get('id')  #需要和传回的key相同
+    Orderform.objects.filter(id = id).delete()
+    return redirect('/login/order/')
+</code></pre>
+<h3 id="63对于forms或者modelform来说获取cleaned_data">63.对于forms或者modelform来说获取cleaned_data</h3>
+<p>实际上两者从前端的request中获取方式是通过input框的name属性，之所以直接通过获取定义好的字段，是因为在模板中渲染的时候生成的input框自带一个和字段一样的name属性。所以如果打算不使用模板生成前端表单，那么获取表单的post请求的关键字，就是通过其中的input的name属性（是键值对类型的），这个也包括验证表单中的cleaned_data。</p>
+<h3 id="64-django项目部署">64. django项目部署</h3>
+<p>https://www.zhihu.com/question/348410145</p>
+<p>https://pythondjango.cn/django/advanced/16-docker-deployment/</p>
+<p>第二个</p>
+<h1 id="看到5-6-暂且把项目做完部署">看到5-6 暂且把项目做完部署！</h1>
+<p>项目做完啦~ 2023/07/05~ 继续补充一捏捏</p>
+<h3 id="65-过滤敏感信息">65. 过滤敏感信息</h3>
+<p><a href="https://www.bilibili.com/video/BV1vK4y1o7jH?p=48">b站 - 8.06 32:00</a></p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#50ajax%E8%AF%B7%E6%B1%82">50.ajax请求</a></li>
+<li><a href="#51%E6%A0%A1%E9%AA%8Cajax%E6%8F%90%E4%BA%A4%E7%9A%84%E8%AF%B7%E6%B1%82">51.校验ajax提交的请求</a></li>
+<li><a href="#52formerrors%E4%B8%AD%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E4%B9%88">52.form.errors中到底是什么</a></li>
+<li><a href="#53jq%E4%B8%AD%E7%9A%84each%E5%8F%AF%E4%BB%A5%E9%81%8D%E5%8E%86%E7%BB%99%E5%AE%9A%E7%9A%84%E5%AF%B9%E8%B1%A1">53.jq中的<code>$.each()</code>可以遍历给定的对象</a></li>
+<li><a href="#54jq%E7%9A%84next%E6%96%B9%E6%B3%95">54.jq的<code>.next()</code>方法</a></li>
+<li><a href="#55%E8%AE%B0%E4%B8%8D%E6%B8%85%E4%BA%86%E5%8F%AF%E4%BB%A5%E5%9B%9E%E9%A1%BE">55.记不清了可以回顾</a>
+<ul>
+<li><a href="#56jq%E7%9A%84empty%E6%96%B9%E6%B3%95">56.jq的empty()方法</a></li>
+</ul>
+</li>
+<li><a href="#57modelform%E5%90%8E%E7%AB%AF%E8%87%AA%E5%AE%9A%E4%B9%89%E5%82%A8%E5%AD%98">57.modelform后端自定义储存</a></li>
+<li><a href="#58modelform%E6%A0%A1%E9%AA%8C%E7%A9%BA%E5%AD%97%E6%AE%B5">58.modelform校验空字段</a></li>
+<li><a href="#59-%E7%99%BB%E5%BD%95%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%94%A8%E6%88%B7%E5%BD%95%E5%85%A5%E5%88%B0form%E8%A1%A8%E5%8D%95%E4%B8%AD%E4%B8%8D%E9%9C%80%E8%A6%81%E7%94%A8%E6%88%B7%E5%A1%AB%E5%86%99">59. 登录系统的用户录入到form表单中，不需要用户填写</a></li>
+<li><a href="#60-jq%E6%B8%85%E7%A9%BA%E8%A1%A8%E5%8D%95%E8%BE%93%E5%85%A5">60. jq清空表单输入</a></li>
+<li><a href="#61jq%E9%80%89%E6%8B%A9%E4%B8%80%E7%BB%84class%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E7%BB%91%E5%AE%9A%E4%B8%80%E7%BB%84%E5%85%83%E7%B4%A0%E7%9A%84%E4%BA%8B%E4%BB%B6">61.jq选择一组class可以直接绑定一组元素的事件</a></li>
+<li><a href="#62ajax%E5%88%A0%E9%99%A4%E7%A1%AE%E8%AE%A4%E9%9C%80%E8%A6%81%E8%AE%BE%E7%BD%AE%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F">62.ajax删除确认需要设置全局变量</a></li>
+<li><a href="#63-ajax%E7%9A%84get%E8%AF%B7%E6%B1%82%E4%BC%A0%E9%80%92%E6%96%B9%E5%BC%8F">63. ajax的get请求传递方式</a></li>
+<li><a href="#63%E5%AF%B9%E4%BA%8Eforms%E6%88%96%E8%80%85modelform%E6%9D%A5%E8%AF%B4%E8%8E%B7%E5%8F%96cleaned_data">63.对于forms或者modelform来说获取cleaned_data</a></li>
+<li><a href="#64-django%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2">64. django项目部署</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E7%9C%8B%E5%88%B05-6-%E6%9A%82%E4%B8%94%E6%8A%8A%E9%A1%B9%E7%9B%AE%E5%81%9A%E5%AE%8C%E9%83%A8%E7%BD%B2">看到5-6 暂且把项目做完部署！</a><br>
+*
+<ul>
+<li><a href="#65-%E8%BF%87%E6%BB%A4%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF">65. 过滤敏感信息</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/django-xue-xi-qian-hou-duan-bu-fen-chi-de-part2/">
+              <h3 class="post-title">
+                django学习 -- 前后端不分离的 -- part.2
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

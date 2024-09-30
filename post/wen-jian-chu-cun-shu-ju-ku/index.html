@@ -1,0 +1,177 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Some thoughts on saving files in the database... | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Some thoughts on saving files in the database... | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+网页上传直接将文件上传到固定目录下，或者直接上传到指定的文件服务器上，将文件相对路径或者访问&gt;key存入数据库就行。数据库直接存文件，小规模可以，大规模不可取。
+
+或者
+
+将文件存储在 mysql 中，可以使用 blob 类型，my..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Some thoughts on saving files in the database...
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-28
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <blockquote>
+<p>网页上传直接将文件上传到固定目录下，或者直接上传到指定的文件服务器上，将文件相对路径或者访问&gt;key存入数据库就行。数据库直接存文件，小规模可以，大规模不可取。</p>
+</blockquote>
+<p>或者</p>
+<blockquote>
+<p>将文件存储在 mysql 中，可以使用 blob 类型，mysql 提供了四个类型来存储不同大小的文件：&gt;TINYBLOB,BLOB,MEDIUMBLOB, LONGBLOB。<br>
+但是，还是劝你不要这样做，一般项目开发都不会在数据库中存文件，否则访问文件可能会对数据库造成很高的负载。你可以将文件存储在服务器的其它位置，或者使用单独文件存储服务。</p>
+</blockquote>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/fei-yi-kai-fa-ri-zhi-3/">
+              <h3 class="post-title">
+                非遗开发日志 --3
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

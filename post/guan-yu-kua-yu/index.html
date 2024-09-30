@@ -1,0 +1,170 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CORS | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="CORS | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="之前就研究过这个问题，在学习ajax的时候看到廖雪峰老师的教程说实话也是半知半解，后来在vsc上安装了一个叫live server的插件，才对跨域有了一点体会。这个插件的作用就是可以把文件地址转换为http协议地址，这样在ajax请求的时候..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              CORS
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-11-08
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>之前就研究过这个问题，在学习ajax的时候看到廖雪峰老师的教程说实话也是半知半解，后来在vsc上安装了一个叫live server的插件，才对跨域有了一点体会。这个插件的作用就是可以把文件地址转换为http协议地址，这样在ajax请求的时候，可以直接请求一个http的url。当然，ajax请求的main文件和被请求的txt文件都在live server有对应的http地址。<br>
+然后就是今天，在学nodejs，它自带一个http的module，然后再廖雪峰的网站上简单创建了一个解析文件地址为http然后在浏览器展示的方法，在尝试的时候，我打开之前的那个main函数，然后再打开ajax请求的txt文件，前者是本地打开，后者是http地址，然后ajax请求的地址是http地址，然后就有了<code>Ensure CORS response header values are valid</code>的报错，发现跨域错误，最后转了一圈发现，只要把ajax请求的地址变为本地或者把这个main文件也变为http的话就可以正常请求了。这次算是更深入了一点了解跨域的问题。<br>
+<a href="https://ithelp.ithome.com.tw/articles/10251693">一个教程</a></p>
+<p><a href="https://stackoverflow.com/questions/38344612/ajax-request-to-local-file-system-not-working-in-chrome">另一个教程</a><br>
+摘要：<br>
+Chrome浏览器不允许ajax在本地文件系统中进行请求（经测试edge浏览器也不允许），但是firefox浏览器允许。可能是因为ajax有一定的<a href="https://juejin.cn/post/6844903544592531463">安全问题</a></p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/hui-diao-han-shu/">
+              <h3 class="post-title">
+                Callback function
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

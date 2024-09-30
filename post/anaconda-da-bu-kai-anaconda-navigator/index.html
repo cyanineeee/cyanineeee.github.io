@@ -1,0 +1,197 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Anaconda can&#39;t open the anaconda navigator | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Anaconda can&#39;t open the anaconda navigator | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="重装了很多次 刚开始只是打开acaconda navigator无反应，最后重装了好几次 还出现了 ImportError: DLL load failed while importing shell: Can not find proce..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Anaconda can&#39;t open the anaconda navigator
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-11-01
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>重装了很多次 刚开始只是打开acaconda navigator无反应，最后重装了好几次 还出现了 <code>ImportError: DLL load failed while importing shell: Can not find procedure.</code><br>
+的报错提示<br>
+最后找到解决方案，以下是我查找解决方法的路径</p>
+<ol>
+<li>
+<p>首先我在官方网站上找到了解决方案<a href="https://docs.anaconda.com/navigator/troubleshooting/#navigator-error-on-start-up">官方网站</a><br>
+它提示我首先找到<code>.condarc</code>文件然后删除（windows位置<em><strong>C://Users//<USERNAME></strong></em>）<br>
+我找到后删除，然后启动anaconda navigator，仍然无反应，于是再次卸载重装。</p>
+</li>
+<li>
+<p>然后再尝试使用官方的第二个方法</p>
+<blockquote>
+<p>If removing the licenses directory does not resolve the issue, manually      &gt;update Navigator from a terminal or an Anaconda Prompt:<br>
+<code>conda update anaconda-navigator</code></p>
+</blockquote>
+<p>发现提示<code>ImportError: DLL load failed while importing shell: Can not find procedure.</code>错误，也尝试了许多其他的命令比如<code>conda info</code>等也是同样的报错提示，于是转为搜索这个错误信息。</p>
+</li>
+<li>
+<p>在这个错误信息的搜索结果下我找到了<a href="https://github.com/conda/conda/issues/11503">github中一个关于这个的issue</a>并且在后续的讨论中找到了这样一个回答：</p>
+<blockquote>
+<p>I also got the same error using the very latest version of Mini-conda (conda &gt;version: 4.12.0, python version: 3.9.12.final.0. when I ran the<br>
+command:<br>
+conda info fails with the errors above<br>
+but<br>
+conda list works<br>
+I did the &quot;pip install --upgrade pywin32==228&quot;<br>
+and now<br>
+conda info succeeds.<br>
+I wonder if its the latest version of mini-conda that has this problem</p>
+</blockquote>
+<p>于是我按照他的方法<code>pip install --upgrade pywin32==228</code>之后，命令行中有红色的报错提示，但是conda命令已经可以执行了，于是我在使用官方的解决方法：<code>conda update anaconda-navigator </code>，最后问题成功解决，Anaconda navigator可以正常打开了。</p>
+</li>
+</ol>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/conda-he-pip-de-qu-bie/">
+              <h3 class="post-title">
+                The difference between pip and conda. 
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

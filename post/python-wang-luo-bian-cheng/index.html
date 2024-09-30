@@ -1,0 +1,447 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>python网络编程 -- 建立一个http服务器+twisted模块--part.1 | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="python网络编程 -- 建立一个http服务器+twisted模块--part.1 | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="=&gt;
+B/S和C/S架构、 后者使用TCP协议，前者使用HTTP协议（HTTP是对TCP的扩充）。
+所有的网络通讯都必须经过OSI（七层架构） -- 七层架构详解 =&gt; TCP/IP 四层架构 、五层架构
+但是为了方便程序开发，..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              python网络编程 -- 建立一个http服务器+twisted模块--part.1
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-06-20
+              </span>
+              <span>
+                13 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="">=&gt;</h1>
+<p>B/S和C/S架构、 后者使用TCP协议，前者使用HTTP协议（HTTP是对TCP的扩充）。<br>
+所有的网络通讯都必须经过OSI（七层架构） -- 七层架构详解 =&gt; TCP/IP 四层架构 、五层架构<br>
+但是为了方便程序开发，socket便出现了，他包装了七层架构中对数据的处理 ，让开发只专注于上层，而不用去为了数据传输和接收为每一个架构的数据处理费心。socket是对各种网络协议的抽象实现。不同语言为了方便开发，都会对网络协议进行包装，因此socket是一个通用的概念。</p>
+<h1 id="-2">=&gt;</h1>
+<p>socket是不同进程之间的通讯，这意味着不仅能进行客户机和服务器之间，同一台主机之间的不同进程也可以通过socket进行交流。<br>
+socket主要是对TCP/IP协议和UDP协议的包装：<br>
+TCP/IP : 有状态、三次握手、四次挥手、性能较低资源占用大；<br>
+UDP ： 无状态、没有握手与挥手、不保存单个结点连接信息、适合广播操作<br>
+总  -&gt; 不管是TCP还是UDP，都是对传输层的保证，数据都会通过七层架构进行处理，最后经过物理层发出。socket的存在包装了传输层，因此现在程序员开发的时候就只需要关注核心带吧，不需要在注意具体的操作协议。</p>
+<h1 id="-3">=&gt;</h1>
+<p>TCP通讯，C/S架构</p>
+<ol>
+<li>服务器端socket程序</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost' #服务器端
+SERVER_PORT = 7000 #本程序端口
+
+def main():
+    with socket.socket() as  server_socket:
+        server_socket.bind((SERVER_HOST,SERVER_PORT)) #绑定本机端口
+        server_socket.listen() #开启监听  
+        print(f'服务器启动完毕，在{SERVER_PORT}端口监听，等待客户端链接...')
+        #进入阻塞 直到客户端进行链接后解除
+        client_conn,address = server_socket.accept() #进入阻塞状态、
+        with client_conn:
+            print(f'客户端已连接到服务端，主机地址是{address[0]}，端口是{address[1]}')
+            client_conn.send(&quot;请求已经收到，测试成功！&quot;.encode('UTF-8'))
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<ol start="2">
+<li>使用telnet命令测试<br>
+windows需要在设置里配置telnet，他是操作系统中提供的一个测试命令。<br>
+<code>telnet localhost 7000</code></li>
+<li>客户端socket程序</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = '127.0.0.1' #服务器主机名称/ip地址
+SERVER_PORT = 7000 #服务器链接端口
+
+def main():
+    with socket.socket() as client_socket: #建立客户端socket
+        client_socket.connect((SERVER_HOST,SERVER_PORT))
+        print(f'服务器返回数据 -- {client_socket.recv(40).decode(&quot;UTF-8&quot;)}')
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<h1 id="-4">=&gt;</h1>
+<p>echo程序模型</p>
+<ol>
+<li>echo服务端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+coding = ['utf-8','gbk']
+def echo_server():
+    with socket.socket() as server_socket:
+        server_socket.bind((SERVER_HOST,SERVER_PORT)) #bind()函数传入元组
+        server_socket.listen()  #监听端口
+        print('服务端已启动，等待客户端链接...')
+        socket_conn,addr = server_socket.accept() #等待接收 进入阻塞
+        with socket_conn: #在接收到的信息前添加【Echo】然后返回 
+            #连接上了之后才while循环 不断进行通讯 
+            #第一次连接成功发送一次提示
+            socket_conn.send('【Echo】连接成功，输入字符发送请求，输入byebye结束链接。'.encode('utf-8'))
+            while True:
+                response = socket_conn.recv(100).decode(coding[0])
+                if response.upper() == &quot;BYEBYE&quot;:
+                    print('客户端发送终止指令，连接结束...')
+                    socket_conn.send('byebye'.encode(coding[0]))
+                    break
+                else:
+                    socket_conn.send(f'【Echo】{response}'.encode(coding[0]))
+if __name__ == '__main__':
+    echo_server()
+</code></pre>
+<blockquote>
+<p>这里需要注意的有两点（我犯的错😣），一是<code>with as</code>的时候需要注意命名不要起冲突；二是再注意while的位置，连接成功后再while才能实现不断地通讯，而不是在连接之前就不断地while。<br>
+这里省略telnet测试。</p>
+</blockquote>
+<ol start="2">
+<li>echo客户端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+def echo_client():
+    with socket.socket() as client:
+        client.connect((SERVER_HOST,SERVER_PORT))
+        #连接成功之后进行通讯
+        while True:
+            response = client.recv(100).decode('utf-8')
+            if response.upper() == 'BYEBYE':
+                print('链接结束...')
+                break
+            else:
+                print(response)
+                text = input()
+                client.send(text.encode('utf-8'))
+if __name__ == '__main__':
+    echo_client()
+</code></pre>
+<blockquote>
+<p>需要注意，一个服务只能绑定一个端，如果程序端口被占用，那么就无法正常启动。</p>
+</blockquote>
+<p>此时的程序已经实现了一个socket通讯，并且是基于TCP协议的，但是有一个重大问题：采用的是单进程的处理模型完成的通讯。这就意味着，如果当前服务端已经有一个客户端进行链接，那么另一个客户端链接的话就会因为主进程被占用而导致无法操作。因此提高性能就需要进行多进程优化。同时，当前服务端程序还会在客户端断开连接之后停止运行，这还意味着后一个服务端并不会像队列一样依次接收客户端，而是在第一个客户端完成连接之后关闭服务，导致后面的客户端失去连接。<br>
+3. 修改服务端程序，采用多进程 （多并发编程）</p>
+<pre><code class="language-python">import socket,multiprocessing #引入多进程处理
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+coding = ['utf-8','gbk']
+def echo_handle(socket_conn,addr):
+   with socket_conn: #在接收到的信息前添加【Echo】然后返回 
+       #连接上了之后才while循环 不断进行通讯 
+       #第一次连接成功发送一次提示
+       socket_conn.send('【Echo】连接成功，输入字符发送请求，输入byebye结束链接。'.encode('utf-8'))
+       while True:
+           response = socket_conn.recv(100).decode(coding[0])
+           if response.upper() == &quot;BYEBYE&quot;:
+               print(f'客户端-{addr[1]}发送终止指令，连接结束...')
+               socket_conn.send('byebye'.encode(coding[0]))
+               break
+           else:
+               socket_conn.send(f'【Echo】{response}'.encode(coding[0]))
+def echo_server():
+   with socket.socket() as server_socket:
+       server_socket.bind((SERVER_HOST,SERVER_PORT)) #bind()函数传入元组
+       server_socket.listen()  #监听端口
+       print('服务端已启动，等待客户端链接...')
+       while True:
+           socket_conn,addr = server_socket.accept() #等待接收 进入阻塞 因此在没有接收到客户端请求的时候while会停止在这里 接收到一个循环一次
+           process = multiprocessing.Process(target=echo_handle,args=(socket_conn,addr),name=f'客户端进程-{addr[1]}')
+           process.start() #启动进程
+
+if __name__ == '__main__':
+   echo_server()            
+</code></pre>
+<p>PS.高并发 -&gt; 处理好服务端的处理效率。<br>
+这里需要注意的是：一需要导入<code>multiprocessing</code>模块处理多进程；二需要将处理函数单独剥离出去，然后根据每一个请求创建一个进程响应；三<code>multiprocessing.Process</code>实例化参数中<code>target</code>表示目标函数，<code>args</code>表示传入进函数的参数，<code>name</code>表示进程的名字。四还需要注意的是，在进入<code>accept</code>的时候，主进程会进入阻塞，这意味着外边的while循环会暂停在<code>accept()</code>这里，直到接受到后才进行下一个循环，也就是进入下一个阻塞等待，这也解决了修改之前服务端会在一个客户端终止连接之后结束服务，他会一直运行。</p>
+<p>#=&gt;<br>
+UDP通讯<br>
+相对于TCP是一种不安全连接，但是想能相对较好。在python使用中差别不大，只需要在引用socket中指定对应参数，同时也不需要监听、接收修改为recvfrom()、发送修改为sendto()。</p>
+<ol>
+<li>UDP服务端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+
+def main():
+    #socket.AF_INET表示使用ipv4网络协议进行服务端创建
+    #socket.SOCK_DGRAM 创建一个数据报（UDP) 协议的网络端
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM)  as udp_server:
+        udp_server.bind((SERVER_HOST,SERVER_PORT)) #bind()函数传入元组
+        print(f'服务器启动完成，监听端口{SERVER_PORT}')
+        while True: #服务端响应就是在收到的信息前面添加【Echo】
+            data,addr = udp_server.recvfrom(100) #不断接收客户端信息
+            print(f'【服务器】客户端{addr[0]}:{addr[1]}成功连接！')
+            echo_data = f'【Echo】{data.decode(&quot;utf-8&quot;)}'.encode('utf-8')
+            udp_server.sendto(echo_data,addr) #将内容相应给接收到信息的对应的客户端
+if __name__ =='__main__':
+    main()
+</code></pre>
+<ol start="2">
+<li>UDP客户端</li>
+</ol>
+<pre><code class="language-python">import socket
+SERVER_HOST = 'localhost'
+SERVER_PORT = 7070
+
+#UDP客户端与TCP客户端的不同就在于 一是协议不同 二是不需要进行连接 只需要不断地发送接收即可
+def echo_udp_client():
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as client:
+        while True:
+            send_data = input('请输入想发送的数据...\n')
+            if send_data:
+                client.sendto(send_data.encode('utf-8'),(SERVER_HOST,SERVER_PORT))
+                data,addr = client.recvfrom(100) #recvfrom会接受一个元组 包含两个元素data和主机地址 而主机地址又是一个元组 包含主机地址和端口两个元素
+                print(data.decode('utf-8'))
+            else: #如果输入内容为空 那么程序结束
+                break
+
+if __name__ == '__main__':
+    echo_udp_client()
+</code></pre>
+<ol start="3">
+<li>send/sendto, recv/recvfrom区别<br>
+PS. 1. UDP不需要建立稳定的链接 ，不受到连接的控制，不需要考虑多连接（不需要考虑并发），需要不断的接收，但只需要将响应的信息原路返回给对应的客户端即可。2. UDP是一种无连接协议，因此不能使用<code>telnet</code>命令进行连接测试。</li>
+</ol>
+<h1 id="-5">=&gt;</h1>
+<p>UDP广播</p>
+<ol>
+<li>UDP广播接收端</li>
+</ol>
+<pre><code class="language-python">import socket
+BROASTCAT_CLIENT_ADDR = ('0.0.0.0',21567) #客户端绑定地址
+
+def mian():
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as client: #这里不变
+        #设置广播模式
+        client.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
+        client.bind(BROASTCAT_CLIENT_ADDR) #绑定广播客户端的地址
+        while True:
+            message,addr = client.recvfrom(100)
+            print(f'接收到的广播客户端数据：【{message.decode(&quot;utf-8&quot;)}】,广播来源为{addr[0]}:{addr[1]}')
+
+if __name__ == '__main__':
+    mian()
+</code></pre>
+<ol start="2">
+<li>UDP广播发送端(服务端)</li>
+</ol>
+<pre><code class="language-python">import socket
+BROASTCAT_SERVER_ADDR = ('&lt;broadcast&gt;',21567) #广播地址 
+
+def main():
+    with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as server_socket: #这里不变 设置UDP编码
+        #设置广播模式
+        server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
+        server_socket.sendto(f'这是一条来自服务端的广播...'.encode('utf-8'),BROASTCAT_SERVER_ADDR)
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<ol start="3">
+<li>需要注意的点/具体解释<br>
+关键的函数配置项：</li>
+</ol>
+<blockquote>
+<p>setsockopt(self,level:int,optname:int.value:Union[int,bytes])<br>
+level: 设置选项所在的协议层编号，有四个可用配置项<br>
+socket.SOL_SOCKET 基本嵌套字接口<br>
+socket.IPPROTO_IP ipv4嵌套字接口<br>
+socket.IPPROTO_IPV6 ipv6嵌套字接口<br>
+socket.IPPRPTP_TCP TCP嵌套字接口<br>
+optname : 设置选项名称，例如，如果要进行广播则可以使用“socket.BROADCA“;<br>
+value: 设置选项的具体内容</p>
+</blockquote>
+<p>为什么要设置广播的端口呢？</p>
+<blockquote>
+<p>&quot;广播有一个广播组，即只有一个广播组内的节点才能收到发往这个广播组的信息。什么决定了一个广播组呢，就是端口号，局域网内一个节点，如果设置了广播属性并监听了端口号A后，那么他就加入了A组广播，这个局域网内所有发往广播端口A的信息他都收的到。在广播的实现中，如果一个节点想接受A组广播信息，那么就要先将他绑定给地址和端口A，然后设置这个socket的属性为广播属性。&quot;<br>
+<a href="https://blog.csdn.net/leonwei/article/details/6202976">reference</a></p>
+</blockquote>
+<p>可以理解为，服务端向同一个局域网内的所有设备的这个端口号发送消息，然后只有接收端设置为广播模式并绑定这个端口之后，才能接收到客户端向着个端口发送的消息；而所有的局域网内的这个端口的设备就组成了一个广播组。具体设置来说，服务端需要设置这个广播组的端口和广播模式：</p>
+<pre><code class="language-python">BROASTCAT_SERVER_ADDR = ('&lt;broadcast&gt;',21567) #广播地址 
+......
+server_socket.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1) #设置广播模式 
+server_socket.sendto(f'这是一条来自服务端的广播...'.encode('utf-8'),BROASTCAT_SERVER_ADDR) #发送到广播组的这个端口
+</code></pre>
+<p>而客户端需要设置广播来源的地址和广播发送的端口即可：</p>
+<pre><code class="language-python">BROASTCAT_CLIENT_ADDR = ('0.0.0.0',21567) #客户端绑定地址
+......
+client.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1) #
+client.bind(BROASTCAT_CLIENT_ADDR) #绑定广播客户端的地址
+</code></pre>
+<p>广播接收端不一定能接收到广播，但是只要打开接收端就可以接收到广播；客户端执行之后就会一直等待服务端发送的消息。</p>
+<h1 id="-6">=&gt;</h1>
+<p>HTTP协议/HTTP服务器<br>
+传统socket需要提供两个程序端（服务端、客户端），因此每一次服务端升级都需要进行客户端强制更新。因此在传统网络编程的基础上就实现了HTTP协议（HTTP是对TCP协议的一种更高级的包装），但是并没有完全脱离传统的TCP协议，是在TCP协议前面添加的头部信息。<br>
+HTTP - 超文本传输协议 是对B/S架构的标准协议<br>
+B/S相对于C/S的好处就是不用在开发一套客户端<br>
+在整个http开发流程中，最重要的设计就是html代码的开发。但对于web服务器开发而言，最重要的是清楚http服务器的开发。<br>
+在整个http请求和响应的处理过程中，关键问题就在于请求和响应的头部信息有哪些、响应状态码。<br>
+HTTP协议中，设计了多种请求模式，主要有get、post。<br>
+http头部信息：<br>
+http状态码：1**、2**、3**、4**、<br>
+常见响应头信息</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#">=&gt;</a></li>
+<li><a href="#-2">=&gt;</a></li>
+<li><a href="#-3">=&gt;</a></li>
+<li><a href="#-4">=&gt;</a></li>
+<li><a href="#-5">=&gt;</a></li>
+<li><a href="#-6">=&gt;</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/scrapy-pa-chong-kuang-jia-geng-shen-ru-li-jie-yi-ji-shi-yong/">
+              <h3 class="post-title">
+                scrapy爬虫框架深入理解 -- 未整理完
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

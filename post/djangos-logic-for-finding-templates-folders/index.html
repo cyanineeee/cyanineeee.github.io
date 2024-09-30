@@ -1,0 +1,204 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Django&#39;s logic for finding templates folders | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Django&#39;s logic for finding templates folders | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="今天创建新app后，配置路由时发现renturn的html页面串了
+即app：show/views.py里面的upload方法return的upload.html
+而不是我在show/templates下面创建的，
+而是app：pictur..." />
+    <meta name="keywords" content="Django,python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Django&#39;s logic for finding templates folders
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-03
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://cyanineeee.github.io/tag/M8-hjmU6C/" class="post-tag">
+                  # Django
+                </a>
+              
+                <a href="https://cyanineeee.github.io/tag/axGgidGI4/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>今天创建新app后，配置路由时发现renturn的html页面串了</p>
+<p>即app：show/views.py里面的upload方法return的upload.html<br>
+而不是我在show/templates下面创建的，<br>
+而是app：picture/templates下面的upload.html文件。<br>
+最开始是怀疑app：show/views.py或者show/urls.py里面设置的路由或者文件名字错误，<br>
+将其全部修改成为upload2之后发现正常导入了。</p>
+<p>但是问题本身并没有被解决，本着继续探索的根源，就继续探索问题根源。</p>
+<p>之后将upload2改为upload之后，猜测可能是django命名空间的原因，<br>
+于是在官方文档中先后查找<br>
+为url添加命名空间(https://docs.djangoproject.com/zh-hans/4.1/intro/tutorial03/#namespacing-url-names)、<br>
+URL命名空间(https://docs.djangoproject.com/zh-hans/4.1/topics/http/urls/)<br>
+结果并没有找到解决方法，并且了解url命名空间只是为了在html页面寻找路由时做区分，<br>
+而不是返回渲染html时寻找html文件做区分</p>
+<p>之后猜想可能是django加载templates文件夹的逻辑<br>
+于是寻找到如下三篇博客解决了我的疑惑：</p>
+<p><a href="https://blog.csdn.net/u014458962/article/details/95938422">第一篇</a></p>
+<p><a href="https://blog.csdn.net/amazingbo/article/details/78965781">第二篇</a></p>
+<p><a href="https://blog.csdn.net/zyz511919766/article/details/18355827?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-18355827-blog-78965781.pc_relevant_multi_platform_whitelistv4&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-18355827-blog-78965781.pc_relevant_multi_platform_whitelistv4&amp;utm_relevant_index=3">第三篇</a></p>
+<p>其中第三篇最为详细，做简单总结与摘要：</p>
+<ol>
+<li>Django默认会在配置文件setting.py的TEMPLATE_LOADERS中开启'django.template.loaders.filesystem.Loader'，<br>
+开启该选项后可以按照TEMPLATE_DIRS中列出的路径的先后顺序从中查找并载入模板(templates文件夹)</li>
+<li>可以在setting.py文件的TEMPLATE钟添加 'django.template.loaders.app_directories.Loader'，这样就会覆盖掉默认方法，加载逻辑就会变成从APP对应的templates文件夹中加载对应的html文件</li>
+<li>但第二条列出的方法并不是常用的做法，更常用的做法是在app/templates文件夹内在建立一个app文件夹(app/templates/app)，然后将html文件放入内，然后在引用时将路径写为“app/html”。并且在创建app/static文件夹时也采取同样的方法，就相当于是提供了一个命名空间，这样便不用担心Django载入的模板究竟是不是对的、需要的那个模板。</li>
+</ol>
+<p>最终问题解决<br>
+Ps.在更改html文件的地址之后，使用django的模板语言的继承时，也需要修改地址。<br>
+example：<br>
+{%extends 'base.html'%}   -&gt;  {%extend 'app/base.html%}</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/shi-yong-gridea-jian-li-bo-ke-shi-yu-dao-de-wen-ti/">
+              <h3 class="post-title">
+                Problem encountered when building a blog with Gridea
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

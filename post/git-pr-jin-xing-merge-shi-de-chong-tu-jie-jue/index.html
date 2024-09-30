@@ -1,0 +1,246 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>git pr 进行 merge时的冲突解决 | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="git pr 进行 merge时的冲突解决 | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+首先是自己提交的pr和主分支出现了冲突 合并被reject
+然后先拉取主分支 确认本地有两个：**当前分支 **和 主分支
+然后将拉取到本地的主分支和自己的分支在本地merge（是本地 上  将远程分支合并到自己的分支）
+逐文件、逐行确认..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              git pr 进行 merge时的冲突解决
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-09-30
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <ul>
+<li>首先是自己提交的pr和主分支出现了冲突 合并被reject</li>
+<li>然后先拉取主分支 确认本地有两个：**<em>当前分支</em> **和 <em><strong>主分支</strong></em></li>
+<li>然后将拉取到本地的主分支和自己的分支在本地merge（是<em><strong>本地</strong></em> 上  <em><strong>将远程分支合并到自己的分支</strong></em>）</li>
+<li>逐文件、逐行确认冲突，是保留自己的？保留主分支？或是一起修改？</li>
+<li>确认完成之后，即远端和自己的分支在<em><strong>本地</strong></em>合并完毕</li>
+<li>然后将解决冲突完成的自己的分支提交到<em><strong>远程仓库的自己的分支</strong></em></li>
+<li>在负责人确认无误后 同意本次pr即完成冲突解决</li>
+</ul>
+<pre><code> #可能用到的命令
+ #查看分支
+ git branch
+ #切换分支
+ git checkout 
+ #查看分支更新日志(有分支的编码) 用来比对冲突的分支的版本、对比当前分支是否是最新的
+ git log
+ #将branchname合并到当前分支
+ git merge&lt;branchname&gt;
+ # 切换到分支branchname
+ git checkout  &lt;branchname&gt;
+ # 查看仓库状态 冲突的文件会是红色的
+ git  status
+ #查看具体冲突
+ git diff &quot;冲突的文件&quot;
+ # 将远程指定分支 拉取到 本地指定分支上
+ git pull origin &lt;远程分支名&gt;:&lt;本地分支名&gt;
+ #取消尚未完成冲出处理的merge - 回滚到合并前的状态
+ git merge --abort
+
+</code></pre>
+<ul>
+<li>合并冲突方式
+<ul>
+<li>在vsc中，可以通过多屏协调进行选取（左右分别为本地、主分支，底部为合并后的）</li>
+<li>在命令行中，需要结合编辑器进行修改</li>
+</ul>
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+修改后的代码（当前分支的修改）
+=======
+修改后的代码（冲突分支的修改）
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; branch_name
+</code></pre>
+解决冲突步骤
+<ul>
+<li>
+<ol>
+<li>打开冲突文件，找到冲突部分</li>
+</ol>
+</li>
+<li>
+<ol start="2">
+<li>根据实际需要修改、保留、删除</li>
+</ol>
+</li>
+<li>
+<ol start="3">
+<li>保存</li>
+</ol>
+</li>
+<li>通过 `git add &quot;修改后的冲突文件&quot;标记问已解决冲突的状态</li>
+<li>全部解决完成之后<code>git commit</code>和  <code>git push</code>进行提交</li>
+</ul>
+</li>
+</ul>
+<h3 id="补充-git讲解stage">补充 -- <a href="https://blog.csdn.net/qq_32452623/article/details/78417609">git讲解stage</a></h3>
+<h3 id="补充-git取消合并的更多讲解">补充 -- <a href="https://geek-docs.com/git/git-questions/94_git_source_tree_git_how_to_cancel_a_merge.html">git取消合并的更多讲解</a></h3>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E8%A1%A5%E5%85%85-git%E8%AE%B2%E8%A7%A3stage">补充 -- git讲解stage</a></li>
+<li><a href="#%E8%A1%A5%E5%85%85-git%E5%8F%96%E6%B6%88%E5%90%88%E5%B9%B6%E7%9A%84%E6%9B%B4%E5%A4%9A%E8%AE%B2%E8%A7%A3">补充 -- git取消合并的更多讲解</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/antd-table-duo-ji-biao-tou-gu-ding-biao-tou-wei-zheng-li/">
+              <h3 class="post-title">
+                antd Table多级表头时固定表头bug 
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

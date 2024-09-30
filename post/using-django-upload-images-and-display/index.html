@@ -1,0 +1,242 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Using django upload images and display | cyanine</title>
+<link rel="shortcut icon" href="https://cyanineeee.github.io/favicon.ico?v=1727687297417">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cyanineeee.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Using django upload images and display | cyanine - Atom Feed" href="https://cyanineeee.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="Django展示图片
+上传图片参考前两个，现在只考虑将图片返回到前端展示（同样只是用django，因为ajax等掌握不熟练XD，过几天一定要拿js重新完成一次这些功能！）
+这个算是前两个（upload-files-by-django par..." />
+    <meta name="keywords" content="Django,python" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cyanineeee.github.io">
+  <img class="avatar" src="https://cyanineeee.github.io/images/avatar.png?v=1727687297417" alt="">
+  </a>
+  <h1 class="site-title">
+    cyanine
+  </h1>
+  <p class="site-description">
+    my personal blog
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          Home Page
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          Archive
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          Tags
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          About
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Using django upload images and display
+            </h2>
+            <div class="post-info">
+              <span>
+                2022-10-07
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://cyanineeee.github.io/tag/M8-hjmU6C/" class="post-tag">
+                  # Django
+                </a>
+              
+                <a href="https://cyanineeee.github.io/tag/axGgidGI4/" class="post-tag">
+                  # python
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="django展示图片">Django展示图片</h2>
+<p>上传图片参考前两个，现在只考虑将图片返回到前端展示（同样只是用django，因为ajax等掌握不熟练XD，过几天一定要拿js重新完成一次这些功能！）<br>
+这个算是前两个（<a href="https://cyanineeee.github.io/post/upload-files-by-django/">upload-files-by-django part1</a>和<a href="https://cyanineeee.github.io/post/upload-files-by-djangopart2-without-modelform/">pload-files-by-django part2</a>）的延申，代码已经上传至github，这里只记录一下遇到的问题。</p>
+<blockquote>
+<p><strong><a href="https://github.com/cyanineeee/little-test/">little-test-main</a></strong></p>
+</blockquote>
+<p>Q1. <img src="https://s3.bmp.ovh/imgs/2022/10/07/190f9ea12744178e.png" alt="在forms.py文件和models.py文件的CharField字段没有设置" loading="lazy"><br>
+问题原因：在forms.py文件和models.py文件的CharField字段没有设置必要参数<code>max_length</code>。<br>
+解决方法：补充上即可。</p>
+<p>Q2. <img src="https://s3.bmp.ovh/imgs/2022/10/07/688a0779f77ec4c3.png" alt="命名空间的关键词设置错误" loading="lazy"><br>
+问题原因：在app display中的urls.py文件中命名空间的关键词设置错误，将<code>app_name</code>记成了<code>namespace</code>。同时在前端页面index.html中使用了命名空间。</p>
+<blockquote>
+<figure data-type="image" tabindex="1"><img src="https://s3.bmp.ovh/imgs/2022/10/07/215001f81ac4fe23.png" alt="问题来源" loading="lazy"></figure>
+</blockquote>
+<center> 问题来源</center>
+解决方法：正确关键字`app_name='display'`
+<p>Q3. <img src="https://s3.bmp.ovh/imgs/2022/10/07/c4993639b64cf5aa.png" alt="缺少{%csrf_token%}" loading="lazy"><br>
+问题原因：没有在form表单中添加<code>{%csrf_token%}</code><br>
+解决方法：补上即可。</p>
+<p>Q4. <img src="https://s3.bmp.ovh/imgs/2022/10/07/83a769ba51387010.png" alt="views.py中方法定义错误，返回的不是文件名而是数据库中的文件对象" loading="lazy"><br>
+问题原因：views.py中方法定义错误，返回的不是文件名而是数据库中的文件对象<br>
+解决方法：</p>
+<blockquote>
+<p>view.py修改之后</p>
+<pre><code>from re import U
+from django.shortcuts import render
+from .models import UploadImages
+from .forms import ImageIdentify
+
+def upload(request):
+   tmpimg = ImageIdentify(request.POST,request.FILES)
+   if tmpimg.is_valid():
+       imgname = request.FILES['image'].name
+       image = &gt;UploadImages(imagename=imgname,images=request.FILES['image'])
+       image.save()
+def display():
+   content = UploadImages.objects.all()
+   namelist = []
+   for con in content:
+       temp=con.get_img_name()
+       namelist.append(temp)
+   if namelist == []:
+       return []
+   else:
+       return namelist
+
+def index(request):
+   if request.method == 'POST':
+       upload(request)
+   content = display()
+   print(content)
+   return render(request,'index.html',{'content':content})
+</code></pre>
+</blockquote>
+<h3 id="最后">最后</h3>
+<p>原测试项目已经上传至githun仓库（<strong><a href="https://github.com/cyanineeee/little-test/">little-test-main</a></strong>），并且在我的硬盘上进行了备份~<br>
+总体这个感觉已经是非常熟练~ 不愧于弄了那么久，同时算是对django的熟悉程度更深了一层。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#django%E5%B1%95%E7%A4%BA%E5%9B%BE%E7%89%87">Django展示图片</a>
+<ul>
+<li><a href="#%E6%9C%80%E5%90%8E">最后</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cyanineeee.github.io/post/upload-files-by-djangopart2-without-modelform/">
+              <h3 class="post-title">
+                Upload files by Django(Part.2--without ModelForm)
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://cyanineeee.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
